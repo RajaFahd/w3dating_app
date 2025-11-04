@@ -11,8 +11,9 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-	int _tab = 4;
 	final double _completion = 0.4; // 40%
+	int _currentPage = 0;
+	final PageController _pageController = PageController();
 
 	@override
 	Widget build(BuildContext context) {
@@ -26,7 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 					padding: const EdgeInsets.only(left: 24),
 					child: IconButton(
 						icon: const Icon(Icons.arrow_back_ios, size: 22),
-						onPressed: () => Navigator.pop(context),
+						onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
 					),
 				),
 				title: const Text(
@@ -67,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 					// 🔥 Header area: Settings - Avatar - Edit sejajar horizontal + avatar diperbesar
 					Container(
 						width: double.infinity,
-						padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 20),
+						padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 34),
 						color: const Color(0xFF2B2C33),
 						child: Column(
 							children: [
@@ -88,25 +89,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
 											),
 										),
 
-										// Avatar with circular progress
-										Stack(
-											alignment: Alignment.center,
-											children: [
-												SizedBox(
-													width: 170,
-													height: 170,
-													child: CustomPaint(
-														painter: _ProgressRingPainter(progress: _completion),
-														child: Container(),
-													),
-												),
-												CircleAvatar(
-													radius: 75,
-													backgroundImage: NetworkImage('https://i.pravatar.cc/200?img=47'),
-												),
-											],
-										),
+										// Avatar dengan efek pink dan progress
+                    Stack(
+                      alignment: Alignment.center,
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Efek pink transparan memudar ke luar
+                        Container(
+                          width: 190,
+                          height: 190,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                          ),
+                        ),
 
+                        // Cincin progress di luar avatar
+                        SizedBox(
+                          width: 170,
+                          height: 170,
+                          child: CustomPaint(
+                            painter: _ProgressRingPainter(progress: _completion),
+                          ),
+                        ),
+
+                        // Avatar utama
+                        CircleAvatar(
+                          radius: 75,
+                          backgroundImage: NetworkImage('https://i.pravatar.cc/200?img=47'),
+                        ),
+
+                        // Persentase "40%" di bawah avatar menempel
+                        Positioned(
+                          bottom: -12, // agar menempel ke bawah lingkaran
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.pink.shade400,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color.fromARGB(255, 74, 74, 74),
+                                width: 4, // border tipis
+                              ),
+                            ),
+                            child: Text(
+                              '40%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
 										// Edit button
 										IconButton(
 											onPressed: () => Navigator.pushNamed(context, '/profile/edit'),
@@ -118,18 +153,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 										),
 									],
 								),
-								Container(
-									padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-									decoration: BoxDecoration(
-										color: Colors.pink.shade400,
-										borderRadius: BorderRadius.circular(20),
-									),
-									child: const Text(
-										'40%',
-										style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-									),
-								),
-
 								const SizedBox(height: 14),
 								const Text('Richard, 20', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
 								const SizedBox(height: 6),
@@ -171,46 +194,104 @@ class _ProfileScreenState extends State<ProfileScreen> {
 						),
 					),
 
-					// Get Dating Plus section
+					// Get Dating Plus section with PageView
 					Expanded(
 						child: Container(
 							width: double.infinity,
-							color: const Color(0xFF071236),
-							padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+							color: const Color(0xFF1B1C23),
+							padding: const EdgeInsets.symmetric(vertical: 24),
 							child: Column(
 								crossAxisAlignment: CrossAxisAlignment.center,
 								children: [
-									const SizedBox(height: 8),
-									const Text('Get Dating Plus', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-									const SizedBox(height: 8),
-									const Text('Get Unlimited Likes, Passport and more!', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70)),
-									const SizedBox(height: 16),
-									ElevatedButton(
-										style: ElevatedButton.styleFrom(backgroundColor: theme.primaryColor, padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))),
-										onPressed: () => Navigator.pushNamed(context, '/profile/subscription'),
-										child: const Text('Get Dating Plus'),
+									Expanded(
+										child: PageView(
+											controller: _pageController,
+											onPageChanged: (index) {
+												setState(() {
+													_currentPage = index;
+												});
+											},
+											children: [
+												_buildSubscriptionPage(
+													title: 'Get Dating Plus',
+													buttonText: 'Get Dating Plus',
+													buttonColor: theme.primaryColor,
+													context: context,
+												),
+												_buildSubscriptionPage(
+													title: 'Get Dating Gold',
+													buttonText: 'Get Dating Gold',
+													buttonColor: theme.primaryColor,
+													context: context,
+												),
+												_buildSubscriptionPage(
+													title: 'Get Dating Platinum',
+													buttonText: 'Get Dating Platinum',
+													buttonColor: theme.primaryColor,
+													context: context,
+												),
+											],
+										),
 									),
 									const SizedBox(height: 18),
 									// dots indicator
-									Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-										Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.pink.shade300, shape: BoxShape.circle)),
-										const SizedBox(width: 8),
-										Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.white24, shape: BoxShape.circle)),
-										const SizedBox(width: 8),
-										Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.white24, shape: BoxShape.circle)),
-									])
+									Row(
+										mainAxisAlignment: MainAxisAlignment.center,
+										children: List.generate(3, (index) {
+											return Container(
+												margin: const EdgeInsets.symmetric(horizontal: 4),
+												width: 8,
+												height: 8,
+												decoration: BoxDecoration(
+													color: _currentPage == index ? Colors.pink.shade300 : Colors.white24,
+													shape: BoxShape.circle,
+												),
+											);
+										}),
+									),
 								],
 							),
 						),
 					)
 				],
 			),
-			bottomNavigationBar: AppBottomNavigation(currentIndex: _tab, onTap: (i) {
-				if (i == 0) Navigator.pushReplacementNamed(context, '/home');
-				if (i == 1) Navigator.pushReplacementNamed(context, '/explore');
-				if (i == 2) Navigator.pushReplacementNamed(context, '/wishlist');
-				if (i == 3) Navigator.pushReplacementNamed(context, '/chat_list');
-			}),
+			bottomNavigationBar: AppBottomNavigation(currentIndex: 4),
+		);
+	}
+
+	Widget _buildSubscriptionPage({
+		required String title,
+		required String buttonText,
+		required Color buttonColor,
+		required BuildContext context,
+	}) {
+		return Padding(
+			padding: const EdgeInsets.symmetric(horizontal: 24),
+			child: Column(
+				mainAxisAlignment: MainAxisAlignment.center,
+				children: [
+					Text(
+						title,
+						style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+					),
+					const SizedBox(height: 12),
+					const Text(
+						'Get Unlimited Likes, Passport and more!',
+						textAlign: TextAlign.center,
+						style: TextStyle(color: Colors.white70),
+					),
+					const SizedBox(height: 20),
+					ElevatedButton(
+						style: ElevatedButton.styleFrom(
+							backgroundColor: buttonColor,
+							padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+							shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+						),
+						onPressed: () => Navigator.pushNamed(context, '/profile/subscription'),
+						child: Text(buttonText),
+					),
+				],
+			),
 		);
 	}
 }
@@ -257,7 +338,7 @@ class _ProgressRingPainter extends CustomPainter {
 	void paint(Canvas canvas, Size size) {
 		final center = Offset(size.width / 2, size.height / 2);
 		final radius = (size.width / 2) - 6;
-		final bgPaint = Paint()..color = Colors.white12..style = PaintingStyle.stroke..strokeWidth = 8;
+		final bgPaint = Paint()..color = const Color.fromARGB(65, 255, 0, 153)..style = PaintingStyle.stroke..strokeWidth = 8;
 		final progPaint = Paint()
 			..shader = const LinearGradient(colors: [Color(0xFFFF80B0), Color(0xFFFF4DA8)]).createShader(Rect.fromCircle(center: center, radius: radius))
 			..style = PaintingStyle.stroke

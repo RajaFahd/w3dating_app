@@ -11,26 +11,87 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _tab = 0;
-
-  final List<Map<String, dynamic>> _profiles = List.generate(
-    6,
-    (i) => {
-      'name': i == 0 ? 'Richard' : 'Person ${i + 1}',
-      'age': '${22 + i}',
-      'location': '${2 + i} km',
-      'image': 'https://picsum.photos/800/1000?random=${i + 100}',  // Stable high quality images
-      'interests': i == 0 ? ['Photography', 'Travel', 'Coffee'] :
-                  ['Climbing', 'Skincare', 'Dancing']
+  // ========================================
+  // DATA PROFIL - Ganti dengan data Anda
+  // ========================================
+  final List<Map<String, dynamic>> _profiles = [
+    {
+      'name': 'Davina Karamoy',
+      'age': '21',
+      'location': 'Jakarta',
+      'distance': '5 km',
+      'image': 'assets/images/profiles/davina.jpg', // Path gambar lokal
+      'bio': 'Artist',
+      'interests': ['Acting', 'Work', 'cooking'],
+      'occupation': 'Artist',
+      'isNew': true,
     },
-  );
+    {
+      'name': 'Ariel Tatum',
+      'age': '32',
+      'location': 'Jakarta',
+      'distance': '5 km',
+      'image': 'assets/images/profiles/ariel.jpg', // Path gambar lokal
+      'bio': 'Artist',
+      'interests': ['Acting', 'Work', 'cooking'],
+      'occupation': 'Artist',
+      'isNew': false,
+    },
+    {
+      'name': 'Anya Geraldine',
+      'age': '25',
+      'location': 'Jakarta',
+      'distance': '5 km',
+      'image': 'assets/images/profiles/anya.jpg', // Path gambar lokal
+      'bio': 'Artist',
+      'interests': ['Acting', 'Work', 'cooking'],
+      'occupation': 'Artist',
+      'isNew': false,
+    },
+    {
+      'name': 'Seno',
+      'age': '20',
+      'location': 'Yogyakarta',
+      'distance': '2 km',
+      'image': 'assets/images/profiles/seno.jpg', // Path gambar lokal
+      'bio': 'Love code and basketball',
+      'interests': ['Basketball', 'Code', 'Sleep'],
+      'occupation': 'Hengkerrrrrr',
+      'isNew': false,
+    },
+    {
+      'name': 'Raja',
+      'age': '20',
+      'location': 'Yogyakarta',
+      'distance': '5 km',
+      'image': 'assets/images/profiles/raja.jpg', // Path gambar lokal
+      'bio': 'IT Enthusiast',
+      'interests': ['Code', 'IT', 'Hike'],
+      'occupation': 'Pentesttttttttttttttttttttt',
+      'isNew': false,
+    },
+    {
+      'name': 'Bima',
+      'age': '24',
+      'location': 'Sleman',
+      'distance': '5 km',
+      'image': 'assets/images/profiles/bima.jpg', // Path gambar lokal
+      'bio': 'IT Enthusiast',
+      'interests': ['Code', 'IT', 'Hike'],
+      'occupation': 'Pentesttttttttttttttttttttt',
+      'isNew': false,
+    },
+  ];
+  // ========================================
 
   void _onLike() {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Liked')));
+    // Feedback sudah ditampilkan di card dengan icon
+    // Bisa tambahkan logic lain seperti save to database
   }
 
   void _onDislike() {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Disliked')));
+    // Feedback sudah ditampilkan di card dengan icon
+    // Bisa tambahkan logic lain seperti save to database
   }
 
   @override
@@ -39,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final swipeAreaHeight = MediaQuery.of(context).size.height * 0.78;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1224),
+      backgroundColor: const Color(0xFF1B1C23),
       drawer: const SideBar(),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -87,25 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
 		),
 	  ),
 
-      bottomNavigationBar: AppBottomNavigation(currentIndex: _tab, onTap: (i) {
-        setState(() => _tab = i);
-        switch (i) {
-          case 0:
-            return;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/explore');
-            break;
-              case 2:
-                Navigator.pushReplacementNamed(context, '/wishlist');
-                break;
-          case 3:
-            Navigator.pushReplacementNamed(context, '/chat_list');
-            break;
-          case 4:
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      }),
+      bottomNavigationBar: AppBottomNavigation(currentIndex: 0),
     );
   }
 }
@@ -145,27 +188,58 @@ class _SwipeCardStackState extends State<SwipeCardStack> with SingleTickerProvid
 
   void _onPanUpdate(DragUpdateDetails d) {
     setState(() {
-      _drag += d.delta;
-      _rotation = (_drag.dx / 300).clamp(-0.3, 0.3);
+      // Batasi pergerakan dengan dampening/resistance
+      final newDragX = _drag.dx + d.delta.dx;
+      final newDragY = _drag.dy + d.delta.dy;
+      
+      // Deteksi arah dominan swipe
+      final isVerticalSwipe = newDragY.abs() > newDragX.abs() * 1.5;
+      
+      // Jika swipe vertikal, set X ke 0 agar lurus ke atas
+      final clampedX = isVerticalSwipe ? 0.0 : newDragX.clamp(-500.0, 500.0);
+      
+      // Batasi vertical movement (hanya bisa ke atas, tidak bisa ke bawah)
+      final clampedY = newDragY.clamp(-500.0, 0.0);
+      
+      _drag = Offset(clampedX, clampedY);
+      
+      // Rotation hanya untuk swipe horizontal, tidak ada rotation untuk swipe vertikal
+      _rotation = isVerticalSwipe ? 0.0 : (clampedX / 400).clamp(-0.15, 0.15);
     });
   }
 
   Future<void> _onPanEnd(DragEndDetails d) async {
-    if (_drag.dx.abs() > 120) {
-      final liked = _drag.dx > 0;
-      // Set final position for animation
-      setState(() {
-        _drag = Offset(liked ? 500 : -500, 0);
-        _rotation = (liked ? 0.3 : -0.3);
-      });
-      // Trigger callbacks
-      if (liked) {
-        widget.onLike?.call();
-      } else {
-        widget.onDislike?.call();
+    // Deteksi arah swipe berdasarkan drag akhir
+    final isVerticalSwipe = _drag.dy.abs() > _drag.dx.abs();
+    final isHorizontalSwipe = _drag.dx.abs() > 80;
+    final isUpSwipe = _drag.dy < -50;
+    
+    if (isHorizontalSwipe || isUpSwipe) {
+      if (isVerticalSwipe && isUpSwipe) {
+        // Swipe ke atas - LURUS tanpa goyah
+        setState(() {
+          _drag = Offset(0, -500); // X = 0 untuk movement lurus ke atas
+          _rotation = 0; // Tidak ada rotasi
+        });
+        // Super Like - tanpa SnackBar
+        // widget.onSuperLike?.call(); // Bisa tambahkan callback jika perlu
+      } else if (isHorizontalSwipe) {
+        // Swipe kiri/kanan
+        final liked = _drag.dx > 0;
+        setState(() {
+          _drag = Offset(liked ? 500 : -500, _drag.dy);
+          _rotation = (liked ? 0.2 : -0.2);
+        });
+        // Trigger callbacks
+        if (liked) {
+          widget.onLike?.call();
+        } else {
+          widget.onDislike?.call();
+        }
       }
-      // Wait for visual feedback
-      await Future.delayed(const Duration(milliseconds: 100));
+      
+      // Wait for visual feedback - dipercepat jadi 100ms
+      await Future.delayed(const Duration(milliseconds: 2000));
       // Reset for next card
       if (mounted) setState(() {
         _topIndex = (_topIndex + 1) % widget.profiles.length;
@@ -173,12 +247,21 @@ class _SwipeCardStackState extends State<SwipeCardStack> with SingleTickerProvid
         _rotation = 0.0;
       });
     } else {
-      // Spring back animation
+      // Spring back animation dengan smooth return ke center
       setState(() {
         _drag = Offset.zero;
         _rotation = 0.0;
       });
     }
+  }
+
+  // Helper method untuk feedback opacity
+  double _getFeedbackOpacity() {
+    final dragDistance = (_drag.dx.abs() > _drag.dy.abs()) 
+        ? _drag.dx.abs() 
+        : _drag.dy.abs();
+    // Opacity 0.0 - 1.0 based on drag distance (max at 100px)
+    return (dragDistance / 100).clamp(0.0, 1.0);
   }
 
   @override
@@ -189,48 +272,146 @@ class _SwipeCardStackState extends State<SwipeCardStack> with SingleTickerProvid
       final profile = widget.profiles[idx];
       final isTop = idx == _topIndex;
       final pos = visible.indexOf(idx);
-      final scale = 1 - (pos * 0.03);
-      final translateY = pos * 12.0;
+      final scale = 1 - (pos * 0.00); // Lebih besar scale difference
+      final translateY = pos * 0.0; // Lebih kecil translateY agar lebih rapat
 
       final card = Positioned.fill(
-        child: Transform.translate(
-          offset: isTop ? _drag : Offset(0, translateY),
-          child: Transform.rotate(
-            angle: isTop ? _rotation : 0.0,
-            child: Align(
-              alignment: Alignment.center,
-              child: FractionallySizedBox(
-                widthFactor: 1.0 * scale,
-                heightFactor: 1.0,
-                child: Card(
-                  color: const Color(0xFF0D1220),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  clipBehavior: Clip.antiAlias,
-                  child: Stack(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16), // Padding kiri kanan
+          child: AnimatedContainer(
+            duration: isTop && _drag == Offset.zero 
+              ? const Duration(milliseconds: 300) 
+              : Duration.zero,
+            curve: Curves.elasticOut,
+            child: Transform.translate(
+              offset: isTop ? _drag : Offset(0, translateY),
+              child: Transform.rotate(
+                angle: isTop ? _rotation : 0.0,
+                child: Align(
+                alignment: Alignment.center,
+                child: FractionallySizedBox(
+                  widthFactor: scale, // Menggunakan scale langsung
+                  heightFactor: scale, // Tambahkan heightFactor juga
+                  child: Card(
+                    elevation: isTop ? 8 : 0, // Shadow hanya untuk card teratas
+                    color: const Color(0xFF0D1220),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    clipBehavior: Clip.antiAlias,
+                    child: Stack(
                     children: [
                       Positioned.fill(
-                        child: Image.network(
+                        child: Image.asset(
                           profile['image'] as String,
                           fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              color: Colors.grey[900],
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          },
                           errorBuilder: (context, error, stackTrace) {
+                            // Fallback jika gambar tidak ditemukan
                             return Container(
                               color: Colors.grey[900],
                               child: const Center(
-                                child: Icon(Icons.error_outline, color: Colors.white54, size: 48),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.person_outline, color: Colors.white54, size: 80),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Image not found',
+                                      style: TextStyle(color: Colors.white54),
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
                         ),
                       ),
+                      
+                      // Feedback overlay - Like di kiri atas
+                      if (isTop && _drag.dx > 20)
+                        Positioned(
+                          top: 20,
+                          left: 20,
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 100),
+                            opacity: _getFeedbackOpacity(),
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: Colors.green.withOpacity(0.15),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.green.withOpacity(0.5),
+                                  width: 3,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.favorite,
+                                size: 60,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                        ),
+                      
+                      // Feedback overlay - Dislike di kanan atas
+                      if (isTop && _drag.dx < -20)
+                        Positioned(
+                          top: 20,
+                          right: 20,
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 100),
+                            opacity: _getFeedbackOpacity(),
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.15),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.red.withOpacity(0.5),
+                                  width: 3,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                size: 60,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                        ),
+                      
+                      // Feedback overlay - Super Like di center agak bawah
+                      if (isTop && _drag.dy < -20 && _drag.dy.abs() > _drag.dx.abs())
+                        Positioned(
+                          top: MediaQuery.of(context).size.height * 0.55,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: AnimatedOpacity(
+                              duration: const Duration(milliseconds: 100),
+                              opacity: _getFeedbackOpacity(),
+                              child: Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.blue.withOpacity(0.5),
+                                    width: 3,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.star,
+                                  size: 70,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      
                       // Gradient overlay at bottom
                       Positioned(
                         left: 0,
@@ -260,22 +441,23 @@ class _SwipeCardStackState extends State<SwipeCardStack> with SingleTickerProvid
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.pink.shade400.withOpacity(0.95),
-                                borderRadius: BorderRadius.circular(16)
+                            if (profile['isNew'] == true)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.pink.shade400.withOpacity(0.95),
+                                  borderRadius: BorderRadius.circular(16)
+                                ),
+                                child: const Text(
+                                  'New here',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600
+                                  )
+                                ),
                               ),
-                              child: const Text(
-                                'New here',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600
-                                )
-                              ),
-                            ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: profile['isNew'] == true ? 8 : 0),
                             Row(
                               children: [
                                 Expanded(
@@ -339,6 +521,8 @@ class _SwipeCardStackState extends State<SwipeCardStack> with SingleTickerProvid
                 ),
               ),
             ),
+          ),
+          ),
           ),
         ),
       );

@@ -9,8 +9,6 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
-	int _tab = 1;
-
 	final List<Map<String, String>> _cards = [
 		{
 			'image': 'https://images.pexels.com/photos/1190295/pexels-photo-1190295.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
@@ -28,7 +26,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
 	@override
 	Widget build(BuildContext context) {
-		final bg = const Color(0xFF071236);
+		final bg = const Color(0xFF1B1C23);
 
 		return Scaffold(
 			backgroundColor: bg,
@@ -37,7 +35,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 				elevation: 0,
 				leading: IconButton(
 					icon: const Icon(Icons.arrow_back_ios),
-					onPressed: () => Navigator.maybePop(context),
+					onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
 				),
 				centerTitle: true,
 				title: const Text('Explore', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -57,20 +55,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
 								cta: item['cta']!,
 							),
 						);
-					},
-				),
+				},
 			),
-			bottomNavigationBar: AppBottomNavigation(currentIndex: _tab, onTap: (i) {
-						if (i == 0) Navigator.pushReplacementNamed(context, '/home');
-						if (i == 2) Navigator.pushReplacementNamed(context, '/wishlist');
-						if (i == 3) Navigator.pushReplacementNamed(context, '/chat_list');
-						if (i == 4) Navigator.pushReplacementNamed(context, '/profile');
-			}),
+		),
+		bottomNavigationBar: AppBottomNavigation(currentIndex: 1),
 		);
 	}
-}
-
-class _ExploreCard extends StatelessWidget {
+}class _ExploreCard extends StatelessWidget {
 	final String imageUrl;
 	final String title;
 	final String subtitle;

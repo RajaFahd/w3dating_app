@@ -13,10 +13,12 @@ class SideBar extends StatelessWidget {
             // Profile header
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  // Profile image
-                  Container(
+              child: GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/profile'),
+                child: Row(
+                  children: [
+                    // Profile image
+                    Container(
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
@@ -59,6 +61,7 @@ class SideBar extends StatelessWidget {
                     icon: const Icon(Icons.menu, color: Colors.white),
                   ),
                 ],
+                ),
               ),
             ),
             const Divider(color: Colors.white10),
@@ -71,7 +74,7 @@ class SideBar extends StatelessWidget {
             _MenuItem(
               icon: Icons.favorite_border,
               label: 'W3Dating Package',
-              onTap: () {},
+              onTap: () => Navigator.pushNamed(context, '/profile/subscription'),
             ),
             _MenuItem(
               icon: Icons.list_alt,
@@ -91,7 +94,7 @@ class SideBar extends StatelessWidget {
             _MenuItem(
               icon: Icons.settings_outlined,
               label: 'Settings',
-              onTap: () {},
+              onTap: () => Navigator.pushNamed(context, '/profile/setting'),
             ),
             _MenuItem(
               icon: Icons.person_outline,

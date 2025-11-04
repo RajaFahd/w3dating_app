@@ -9,8 +9,6 @@ class WishlistScreen extends StatefulWidget {
 }
 
 class _WishlistScreenState extends State<WishlistScreen> {
-	int _tab = 2;
-
 	final List<Map<String, String>> _people = List.generate(
 		8,
 		(i) => {
@@ -26,7 +24,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
 			appBar: AppBar(
 				backgroundColor: Colors.transparent,
 				elevation: 0,
-				leading: IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => Navigator.pop(context)),
+				leading: IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: () => Navigator.pushReplacementNamed(context, '/home')),
 				centerTitle: false,
 				title: const Text('Liked you', style: TextStyle(fontWeight: FontWeight.bold)),
 				actions: [IconButton(onPressed: () => Navigator.pushNamed(context, '/profile/filter'), icon: const Icon(Icons.filter_list))],
@@ -77,15 +75,9 @@ class _WishlistScreenState extends State<WishlistScreen> {
 												),
 											),
 										);
-				},
-			),
-			bottomNavigationBar: AppBottomNavigation(currentIndex: _tab, onTap: (i) {
-				if (i == 0) Navigator.pushReplacementNamed(context, '/home');
-				if (i == 1) Navigator.pushReplacementNamed(context, '/explore');
-				if (i == 3) Navigator.pushReplacementNamed(context, '/chat_list');
-				if (i == 4) Navigator.pushReplacementNamed(context, '/profile');
-			}),
+			},
+		),
+		bottomNavigationBar: AppBottomNavigation(currentIndex: 2),
 		);
 	}
 }
-

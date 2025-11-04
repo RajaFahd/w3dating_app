@@ -21,10 +21,10 @@ class MessageItem {
 
 final List<MessageItem> messages = [
   MessageItem(
-    name: 'Leneve',
-    message: 'Would love to!',
+    name: 'Davina Karamoy',
+    message: 'Halo, boleh kenalan ga?',
     time: '2m ago',
-    avatarUrl: 'https://i.pravatar.cc/150?img=32',
+    avatarUrl: 'assets/images/profiles/davina_kotak.jpg',
     isRead: true,
     isOnline: true,
   ),
@@ -66,6 +66,15 @@ final List<MessageItem> messages = [
 class ChatListPage extends StatelessWidget {
   const ChatListPage({Key? key}) : super(key: key);
 
+  // Helper method untuk mendapatkan image provider yang tepat
+  ImageProvider _getAvatarImage(String avatarUrl) {
+    if (avatarUrl.startsWith('assets/')) {
+      return AssetImage(avatarUrl);
+    } else {
+      return NetworkImage(avatarUrl);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -81,7 +90,7 @@ class ChatListPage extends StatelessWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
         ),
       ),
       body: Column(
@@ -100,13 +109,15 @@ class ChatListPage extends StatelessWidget {
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 16),
-                  child: Column(
-                    children: [
-                      Stack(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/chat_screen', arguments: msg),
+                    child: Column(
+                      children: [
+                        Stack(
                         children: [
                           CircleAvatar(
                             radius: 30,
-                            backgroundImage: NetworkImage(msg.avatarUrl),
+                            backgroundImage: _getAvatarImage(msg.avatarUrl),
                           ),
                           if (msg.isOnline)
                             Positioned(
@@ -144,6 +155,7 @@ class ChatListPage extends StatelessWidget {
                       ),
                     ],
                   ),
+                  ),
                 );
               },
             ),
@@ -154,7 +166,7 @@ class ChatListPage extends StatelessWidget {
               padding: const EdgeInsets.only(left: 16, bottom: 12),
               child: Text(
                 'Message',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -175,7 +187,7 @@ class ChatListPage extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundImage: NetworkImage(msg.avatarUrl),
+                        backgroundImage: _getAvatarImage(msg.avatarUrl),
                       ),
                       if (msg.isOnline)
                         Positioned(
@@ -203,7 +215,7 @@ class ChatListPage extends StatelessWidget {
                   subtitle: Text(
                     msg.message,
                     style: TextStyle(
-                      color: msg.isRead ? Colors.grey : Colors.white70,
+                      color: msg.isRead ? Colors.grey : Colors.white,
                       fontSize: 14,
                     ),
                   ),
@@ -221,21 +233,22 @@ class ChatListPage extends StatelessWidget {
                         height: 20,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-
+                          color: msg.isRead 
+                              ? const Color(0xFFFF4081).withOpacity(0.15)
+                              : Colors.white.withOpacity(0.15),
                           border: Border.all(
-
-                            color: msg.isRead
-                                ? Color(0xFFFF4081)
-                                : Colors.white,
+                            color: msg.isRead 
+                                ? const Color(0xFFFF4081).withOpacity(0.5)
+                                : Colors.white.withOpacity(0.5),
                             width: 1,
                           ),
                         ),
-                        child: Icon(
-                          Icons.check,
-                          size: 14,
-                          color: msg.isRead
-                              ? Color(0xFFFF4081)
-                              : Color(0xFFFF4081),
+                        child: Center(
+                          child: Icon(
+                            Icons.check,
+                            size: 14,
+                            color: const Color(0xFFFF4081),
+                          ),
                         ),
                       ),
                     ],
@@ -247,12 +260,7 @@ class ChatListPage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: AppBottomNavigation(currentIndex: 3, onTap: (i) {
-        if (i == 0) Navigator.pushReplacementNamed(context, '/home');
-        if (i == 1) Navigator.pushReplacementNamed(context, '/explore');
-        if (i == 2) Navigator.pushReplacementNamed(context, '/wishlist');
-        if (i == 4) Navigator.pushReplacementNamed(context, '/profile');
-      }),
+      bottomNavigationBar: AppBottomNavigation(currentIndex: 3),
     );
   }
 }

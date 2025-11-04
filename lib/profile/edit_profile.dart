@@ -6,7 +6,7 @@ class EditProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF000A33),
+      backgroundColor: const Color(0xFF1B1C23),
       appBar: AppBar(
         backgroundColor: const Color(0xFF212635),
         elevation: 0,

@@ -11,13 +11,22 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
 	final TextEditingController _ctl = TextEditingController();
 	final List<Map<String, dynamic>> _messages = [
-		{'fromMe': false, 'text': 'Hi Richard , thanks for adding me', 'time': '08:35'},
-		{'fromMe': true, 'text': 'Hi Miselia , your welcome , nice to meet you too', 'time': '08:40'},
-		{'fromMe': false, 'text': "I look you're singer, can you sing for me", 'time': '09:44'},
-		{'fromMe': true, 'text': 'Sure', 'time': '09:30'},
-		{'fromMe': false, 'text': 'Really!', 'time': '10:44'},
-		{'fromMe': true, 'text': 'Why not', 'time': '10:44'},
+		{'fromMe': false, 'text': 'Halo, boleh kenalan ga?', 'time': '08:35'},
+		// {'fromMe': true, 'text': 'Hi Miselia , your welcome , nice to meet you too', 'time': '08:40'},
+		// {'fromMe': false, 'text': "I look you're singer, can you sing for me", 'time': '09:44'},
+		// {'fromMe': true, 'text': 'Sure', 'time': '09:30'},
+		// {'fromMe': false, 'text': 'Really!', 'time': '10:44'},
+		// {'fromMe': true, 'text': 'Why not', 'time': '10:44'},
 	];
+
+	// Helper method untuk mendapatkan image provider yang tepat
+	ImageProvider _getAvatarImage(String avatarUrl) {
+		if (avatarUrl.startsWith('assets/')) {
+			return AssetImage(avatarUrl);
+		} else {
+			return NetworkImage(avatarUrl);
+		}
+	}
 
 	@override
 	Widget build(BuildContext context) {
@@ -32,7 +41,11 @@ class _ChatScreenState extends State<ChatScreen> {
 				elevation: 0,
 				leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
 				title: Row(children: [
-					CircleAvatar(radius: 20, backgroundImage: msg != null ? NetworkImage(msg.avatarUrl) : null, backgroundColor: Colors.grey[700]),
+					CircleAvatar(
+						radius: 20, 
+						backgroundImage: msg != null ? _getAvatarImage(msg.avatarUrl) : null, 
+						backgroundColor: Colors.grey[700]
+					),
 					const SizedBox(width: 12),
 					Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 						Text(msg?.name ?? 'Name', style: const TextStyle(fontWeight: FontWeight.bold)),

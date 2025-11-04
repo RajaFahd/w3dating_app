@@ -18,7 +18,7 @@ class _ProfileFilterPageState extends State<ProfileFilterPage> {
 		@override
 		Widget build(BuildContext context) {
 			return Scaffold(
-				backgroundColor: const Color(0xFF061233),
+				backgroundColor: const Color(0xFF1B1C23),
 				body: SafeArea(
 					child: Column(
 						children: [
