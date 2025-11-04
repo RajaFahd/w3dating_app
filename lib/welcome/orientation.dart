@@ -38,80 +38,89 @@ class _OrientationPageState extends State<OrientationPage> {
 
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 32),
-                    // Title
-                    const Text(
-                      'Your sexual orientation ?',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Orientation options
-                    ...orientations.map((orientation) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            selectedOrientation = orientation;
-                          });
-                        },
-                        child: Container(
-                          height: 56,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: selectedOrientation == orientation 
-                                ? const Color(0xFFFF3F80)
-                                : Colors.white.withOpacity(0.2),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const SizedBox(width: 16),
-                              Icon(
-                                selectedOrientation == orientation
-                                    ? Icons.check_box_rounded
-                                    : Icons.check_box_outline_blank_rounded,
-                                color: selectedOrientation == orientation
-                                    ? const Color(0xFFFF3F80)
-                                    : Colors.white.withOpacity(0.6),
-                                size: 24,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                orientation,
-                                style: TextStyle(
-                                  color: selectedOrientation == orientation
-                                      ? Colors.white
-                                      : Colors.white.withOpacity(0.8),
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
-                          ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width < 400 ? 16.0 : 24.0
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: MediaQuery.of(context).size.height < 800 ? 16 : 32),
+                      // Title
+                      Text(
+                        'Your sexual orientation ?',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: MediaQuery.of(context).size.width < 400 ? 22 : 26,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    )).toList(),
-                  ],
+                      SizedBox(height: MediaQuery.of(context).size.height < 800 ? 20 : 32),
+
+                      // Orientation options
+                      ...orientations.map((orientation) => Padding(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).size.height < 800 ? 12.0 : 16.0
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              selectedOrientation = orientation;
+                            });
+                          },
+                          child: Container(
+                            height: MediaQuery.of(context).size.height < 800 ? 50 : 56,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: selectedOrientation == orientation 
+                                  ? const Color(0xFFFF3F80)
+                                  : Colors.white.withOpacity(0.2),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(width: MediaQuery.of(context).size.width < 400 ? 12 : 16),
+                                Icon(
+                                  selectedOrientation == orientation
+                                      ? Icons.check_box_rounded
+                                      : Icons.check_box_outline_blank_rounded,
+                                  color: selectedOrientation == orientation
+                                      ? const Color(0xFFFF3F80)
+                                      : Colors.white.withOpacity(0.6),
+                                  size: 24,
+                                ),
+                                SizedBox(width: MediaQuery.of(context).size.width < 400 ? 10 : 12),
+                                Text(
+                                  orientation,
+                                  style: TextStyle(
+                                    color: selectedOrientation == orientation
+                                        ? Colors.white
+                                        : Colors.white.withOpacity(0.8),
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )).toList(),
+                      const SizedBox(height: 16), // Extra space for scroll
+                    ],
+                  ),
                 ),
               ),
             ),
 
             // Next button
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(
+                MediaQuery.of(context).size.width < 400 ? 16.0 : 24.0
+              ),
               child: SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: MediaQuery.of(context).size.height < 800 ? 50 : 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF3F80),

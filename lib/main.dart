@@ -10,6 +10,7 @@ import 'package:w3dating_app/welcome/intrested.dart';
 import 'package:w3dating_app/welcome/looking_for.dart';
 import 'package:w3dating_app/welcome/recent_pics.dart';
 import 'package:w3dating_app/home/home_screen.dart';
+import 'package:w3dating_app/home/match_screen_page.dart';
 import 'package:w3dating_app/explore/explore_screen.dart';
 import 'package:w3dating_app/chat/chat_list.dart';
 import 'package:w3dating_app/chat/chat_screen.dart';
@@ -46,8 +47,9 @@ class W3DatingApp extends StatelessWidget {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
         ),
       ),
-      initialRoute: '/onboarding',
+      initialRoute: '/match_screen',
       routes: {
+        '/match_screen': (ctx) => const MatchScreenPage(),
         '/onboarding': (ctx) => const OnboardingPage(),
         '/login': (ctx) => const LoginPage(),
         '/otp': (ctx) => const OtpPage(),

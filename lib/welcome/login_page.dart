@@ -30,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.only(left: 8.0, top: 8.0),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/onboarding'),
               ),
             ),
 

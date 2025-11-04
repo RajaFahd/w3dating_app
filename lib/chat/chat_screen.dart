@@ -39,7 +39,7 @@ class _ChatScreenState extends State<ChatScreen> {
 			appBar: AppBar(
 				backgroundColor: Colors.transparent,
 				elevation: 0,
-				leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+				leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pushReplacementNamed(context, '/chat_list')),
 				title: Row(children: [
 					CircleAvatar(
 						radius: 20, 
@@ -47,14 +47,16 @@ class _ChatScreenState extends State<ChatScreen> {
 						backgroundColor: Colors.grey[700]
 					),
 					const SizedBox(width: 12),
-					Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-						Text(msg?.name ?? 'Name', style: const TextStyle(fontWeight: FontWeight.bold)),
-						Text(msg != null ? 'Online 24m ago' : '', style: const TextStyle(fontSize: 12, color: Colors.white70)),
-					])
+					Expanded(
+						child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+							Text(msg?.name ?? 'Name', style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+							Text(msg != null ? 'Online 24m ago' : '', style: const TextStyle(fontSize: 12, color: Colors.white70)),
+						]),
+					)
 				]),
 				actions: [
-					IconButton(onPressed: () {}, icon: const Icon(Icons.call)),
-					IconButton(onPressed: () {}, icon: const Icon(Icons.videocam)),
+					IconButton(onPressed: () {}, icon: const Icon(Icons.call, size: 22)),
+					IconButton(onPressed: () {}, icon: const Icon(Icons.videocam, size: 22)),
 				],
 			),
 			body: Column(children: [
@@ -97,22 +99,24 @@ class _ChatScreenState extends State<ChatScreen> {
 				),
 				SafeArea(
 					child: Container(
-						padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+						padding: EdgeInsets.symmetric(
+							horizontal: MediaQuery.of(context).size.width < 400 ? 8 : 12, 
+							vertical: 10
+						),
 						color: const Color(0xFF17171A),
 						child: Row(children: [
 							Expanded(
 								child: Container(
 									height: 48,
-									padding: const EdgeInsets.symmetric(horizontal: 12),
-
+									padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width < 400 ? 8 : 12),
 									child: Row(children: [
-										const Icon(Icons.insert_emoticon, color: Colors.white54),
-										const SizedBox(width: 8),
+										const Icon(Icons.insert_emoticon, color: Colors.white54, size: 22),
+										SizedBox(width: MediaQuery.of(context).size.width < 400 ? 6 : 8),
 										Expanded(child: TextField(controller: _ctl, style: const TextStyle(color: Colors.white), decoration: const InputDecoration.collapsed(hintText: 'Send message...', hintStyle: TextStyle(color: Colors.white54)))),
 									]),
 								),
 							),
-							const SizedBox(width: 8),
+							SizedBox(width: MediaQuery.of(context).size.width < 400 ? 6 : 8),
 							Container(
 								width: 44,
 								height: 44,
@@ -125,7 +129,7 @@ class _ChatScreenState extends State<ChatScreen> {
 											_ctl.clear();
 										});
 									},
-									icon: const Icon(Icons.send, color: Colors.white),
+									icon: const Icon(Icons.send, color: Colors.white, size: 20),
 								),
 							)
 						]),

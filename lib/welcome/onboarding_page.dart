@@ -1,6 +1,130 @@
 import 'dart:math';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+class WelcomeCarousel extends StatefulWidget {
+  const WelcomeCarousel({super.key});
+
+  @override
+  State<WelcomeCarousel> createState() => _WelcomeCarouselState();
+}
+
+class _WelcomeCarouselState extends State<WelcomeCarousel> {
+  final List<Map<String, String>> slides = [
+    {
+      'title': 'Begin Your\nChapter of Love',
+      'subtitle': 'Embrace the dating world\narmed with tools and support',
+    },
+    {
+      'title': 'Your Journey\nof Connection',
+      'subtitle': 'Explore essentials and delights\nthat boost confidence',
+    },
+    {
+      'title': 'Start Your\nDating Story',
+      'subtitle': 'Your companion for meaningful\nconnections',
+    },
+  ];
+  late final PageController _pageController;
+  int _currentPage = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!mounted) return;
+      int nextPage = (_currentPage + 1) % slides.length;
+      _pageController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+    final isSmall = width < 350 || height < 650;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: isSmall ? 60 : 200,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: slides.length,
+            onPageChanged: (i) {
+              setState(() => _currentPage = i);
+            },
+            itemBuilder: (context, i) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    slides[i]['title']!,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isSmall ? 15 : 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: isSmall ? 3 : 0),
+                  Text(
+                    slides[i]['subtitle']!,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: isSmall ? 10 : 16,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        SizedBox(height: isSmall ? 16 : 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            slides.length,
+            (i) => Container(
+              margin: EdgeInsets.symmetric(horizontal: isSmall ? 1.5 : 4),
+              width: isSmall ? 5 : 8,
+              height: isSmall ? 5 : 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: i == _currentPage
+                    ? const Color(0xFFFF3F80)
+                    : Colors.white24,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({Key? key}) : super(key: key);
@@ -10,6 +134,10 @@ class OnboardingPage extends StatelessWidget {
     final bg = const Color(0xFF2B2C33);
     final pink = const Color(0xFFFE6E9F);
     final lightPink = const Color(0xFFFFC0D6);
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+    final isSmallW = width < 400;
+    final isSmallH = height < 800;
 
     return Scaffold(
       backgroundColor: bg,
@@ -18,149 +146,135 @@ class OnboardingPage extends StatelessWidget {
           children: [
             Expanded(
               child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 28.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: 300,
-                        height: 360,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // dotted circle
-                            CustomPaint(
-                              size: const Size(300, 300),
-                              painter: DottedCirclePainter(color: Colors.white30, gap: 10, strokeWidth: 3),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Gambar utama (lock + avatar + dotted circle)
+                    SizedBox(
+                      width: isSmallW ? 220 : 300,
+                      height: isSmallH ? 240 : 360,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Dotted circle
+                          CustomPaint(
+                            size: Size(
+                              isSmallW ? 180 : 260,
+                              isSmallW ? 180 : 260,
                             ),
-
-                            // three small avatar dots around
-                            Positioned(
-                              top: 18,
-                              left: 180,
-                              child: glowAvatar('https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200', 48),
+                            painter: DottedCirclePainter(
+                              color: Colors.white30,
+                              gap: 10,
+                              strokeWidth: 3,
                             ),
-                            Positioned(
-                              top: 110,
-                              left: 12,
-                              child: glowAvatar('https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200', 52),
+                          ),
+                          // Avatar-1 (atas)
+                          Positioned(
+                            top: isSmallW ? 10 : 18,
+                            child: glowAvatar(
+                              'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200',
+                              isSmallW ? 36 : 48,
                             ),
-                            Positioned(
-                              bottom: 30,
-                              right: 20,
-                              child: glowAvatar('https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=200', 52),
+                          ),
+                          // Avatar-2 (kiri bawah)
+                          Positioned(
+                            left: isSmallW ? 8 : 24,
+                            bottom: isSmallW ? 32 : 52,
+                            child: glowAvatar(
+                              'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200',
+                              isSmallW ? 38 : 52,
                             ),
-
-                            // central large circle with lock/heart icon
-                            Container(
-                              width: 190,
-                              height: 190,
+                          ),
+                          // Avatar-3 (kanan bawah)
+                          Positioned(
+                            right: isSmallW ? 8 : 24,
+                            bottom: isSmallW ? 32 : 52,
+                            child: glowAvatar(
+                              'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=200',
+                              isSmallW ? 38 : 52,
+                            ),
+                          ),
+                          // Lingkaran tengah + icon
+                          Container(
+                            width: isSmallW ? 110 : 170,
+                            height: isSmallW ? 110 : 170,
+                            decoration: BoxDecoration(
+                              color: Colors.white24,
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Container(
+                              width: isSmallW ? 60 : 120,
+                              height: isSmallW ? 60 : 120,
                               decoration: BoxDecoration(
-                                color: Colors.white24,
                                 shape: BoxShape.circle,
-                              ),
-                              alignment: Alignment.center,
-                              child: Container(
-                                width: 120,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [lightPink, pink],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
+                                gradient: LinearGradient(
+                                  colors: [lightPink, pink],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: pink.withOpacity(0.4),
+                                    blurRadius: isSmallW ? 8 : 18,
+                                    offset: Offset(0, isSmallW ? 3 : 8),
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: pink.withOpacity(0.4),
-                                      blurRadius: 18,
-                                      offset: const Offset(0, 8),
-                                    )
+                                ],
+                              ),
+                              child: Center(
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.favorite,
+                                      size: isSmallW ? 28 : 60,
+                                      color: Colors.white,
+                                    ),
+                                    Positioned(
+                                      bottom: isSmallW ? 8 : 24,
+                                      child: Icon(
+                                        Icons.lock_outline,
+                                        size: isSmallW ? 14 : 28,
+                                        color: Colors.white70,
+                                      ),
+                                    ),
                                   ],
                                 ),
-                                child: Center(
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.favorite,
-                                        size: 60,
-                                        color: Colors.white,
-                                      ),
-                                      // small lock icon overlay
-                                      Positioned(
-                                        bottom: 24,
-                                        child: Icon(
-                                          Icons.lock_outline,
-                                          size: 28,
-                                          color: Colors.white70,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 28),
-
-                      // Title
-                      Text(
-                        'Begin Your\\nChapter of Love',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Subtitle
-                      Text(
-                        'Embrace the dating world\\narmed with tools and support',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-
-                      const SizedBox(height: 22),
-
-                      // pager dots
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          dot(Colors.white38),
-                          const SizedBox(width: 8),
-                          dot(pink),
-                          const SizedBox(width: 8),
-                          dot(Colors.white38),
+                          ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: isSmallH ? 24 : 30),
+                    // Carousel teks (auto-scroll, responsif, tidak overflow)
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isSmallW ? 30 : 0,
+                      ),
+                      child: WelcomeCarousel(),
+                    ),
+                  ],
                 ),
               ),
             ),
-
-            // CTA button
+            // Tombol bawah
             Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 28),
+              padding: EdgeInsets.only(
+                left: isSmallW ? 8 : 20,
+                right: isSmallW ? 8 : 20,
+                bottom: isSmallH ? 14 : 28,
+              ),
               child: SizedBox(
-                height: 62,
+                height: isSmallH ? 46 : 62,
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40),
+                    ),
                     elevation: 6,
                   ),
                   onPressed: () {
@@ -168,14 +282,20 @@ class OnboardingPage extends StatelessWidget {
                   },
                   child: Ink(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [pink, const Color(0xFFFF8AB8)]),
+                      gradient: LinearGradient(
+                        colors: [pink, const Color(0xFFFF8AB8)],
+                      ),
                       borderRadius: BorderRadius.circular(40),
                     ),
                     child: Container(
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: Text(
                         'Find Someone',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: isSmallW ? 14 : 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -187,30 +307,6 @@ class OnboardingPage extends StatelessWidget {
       ),
     );
   }
-
-  Widget dot(Color c) {
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(color: c, shape: BoxShape.circle),
-    );
-  }
-
-  Widget glowAvatar(String url, double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(color: Colors.pink.withOpacity(0.25), blurRadius: 8, spreadRadius: 1),
-        ],
-      ),
-      child: CircleAvatar(
-        backgroundImage: NetworkImage(url),
-      ),
-    );
-  }
 }
 
 class DottedCirclePainter extends CustomPainter {
@@ -218,7 +314,11 @@ class DottedCirclePainter extends CustomPainter {
   final double gap;
   final double strokeWidth;
 
-  DottedCirclePainter({this.color = Colors.white24, this.gap = 6, this.strokeWidth = 4});
+  DottedCirclePainter({
+    this.color = Colors.white24,
+    this.gap = 6,
+    this.strokeWidth = 4,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -239,7 +339,13 @@ class DottedCirclePainter extends CustomPainter {
     for (int i = 0; i < count; i++) {
       final double start = (i * gapWithDash) / circumference * 2 * pi;
       final double sweep = dash / circumference * 2 * pi;
-      canvas.drawArc(Rect.fromCircle(center: center, radius: radius), start, sweep, false, paint);
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        start,
+        sweep,
+        false,
+        paint,
+      );
     }
   }
 
@@ -247,3 +353,20 @@ class DottedCirclePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+Widget glowAvatar(String url, double size) {
+  return Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.pink.withOpacity(0.25),
+          blurRadius: 8,
+          spreadRadius: 1,
+        ),
+      ],
+    ),
+    child: CircleAvatar(backgroundImage: NetworkImage(url)),
+  );
+}

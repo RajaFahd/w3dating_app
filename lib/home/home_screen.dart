@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:w3dating_app/template/bottom_navigation.dart';
 import 'package:w3dating_app/template/sidebar.dart';
 import 'package:w3dating_app/home/match_screen_page.dart';
+import 'dart:math' as math;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -86,7 +87,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onLike() {
     // Feedback sudah ditampilkan di card dengan icon
-    // Bisa tambahkan logic lain seperti save to database
+    // Simulasi random match (30% chance to show match screen)
+    if (math.Random().nextDouble() < 0.3) {
+      // Ambil profil yang sedang di-like (profil terakhir)
+      final likedProfile = _profiles.isNotEmpty ? _profiles.last : null;
+      
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && likedProfile != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MatchScreenPage(
+                matchName: likedProfile['name'] as String,
+                userImageUrl: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400',
+                matchImageUrl: likedProfile['imageUrl'] as String,
+              ),
+            ),
+          );
+        }
+      });
+    }
   }
 
   void _onDislike() {
@@ -97,7 +117,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final swipeAreaHeight = MediaQuery.of(context).size.height * 0.78;
 
     return Scaffold(
       backgroundColor: const Color(0xFF1B1C23),
@@ -238,14 +257,16 @@ class _SwipeCardStackState extends State<SwipeCardStack> with SingleTickerProvid
         }
       }
       
-      // Wait for visual feedback - dipercepat jadi 100ms
-      await Future.delayed(const Duration(milliseconds: 2000));
+      // Delay minimal untuk visual feedback - dipercepat jadi 150ms
+      await Future.delayed(const Duration(milliseconds: 150));
       // Reset for next card
-      if (mounted) setState(() {
-        _topIndex = (_topIndex + 1) % widget.profiles.length;
-        _drag = Offset.zero;
-        _rotation = 0.0;
-      });
+      if (mounted) {
+        setState(() {
+          _topIndex = (_topIndex + 1) % widget.profiles.length;
+          _drag = Offset.zero;
+          _rotation = 0.0;
+        });
+      }
     } else {
       // Spring back animation dengan smooth return ke center
       setState(() {
@@ -280,9 +301,9 @@ class _SwipeCardStackState extends State<SwipeCardStack> with SingleTickerProvid
           padding: const EdgeInsets.symmetric(horizontal: 16), // Padding kiri kanan
           child: AnimatedContainer(
             duration: isTop && _drag == Offset.zero 
-              ? const Duration(milliseconds: 300) 
+              ? const Duration(milliseconds: 200) 
               : Duration.zero,
-            curve: Curves.elasticOut,
+            curve: Curves.easeOut,
             child: Transform.translate(
               offset: isTop ? _drag : Offset(0, translateY),
               child: Transform.rotate(

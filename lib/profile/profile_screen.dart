@@ -68,7 +68,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 					// 🔥 Header area: Settings - Avatar - Edit sejajar horizontal + avatar diperbesar
 					Container(
 						width: double.infinity,
-						padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 34),
+						padding: EdgeInsets.symmetric(
+							vertical: MediaQuery.of(context).size.height < 800 ? 16 : 26, 
+							horizontal: MediaQuery.of(context).size.width < 400 ? 16 : 34
+						),
 						color: const Color(0xFF2B2C33),
 						child: Column(
 							children: [
@@ -83,9 +86,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 												MaterialPageRoute(builder: (context) => const SettingPage()),
 											),
 											icon: CircleAvatar(
-												radius: 28,
+												radius: MediaQuery.of(context).size.width < 400 ? 22 : 28,
 												backgroundColor: Colors.purple.shade800.withOpacity(0.3),
-												child: const Icon(Icons.settings, color: Colors.white),
+												child: Icon(Icons.settings, color: Colors.white, size: MediaQuery.of(context).size.width < 400 ? 18 : 24),
 											),
 										),
 
@@ -96,8 +99,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         // Efek pink transparan memudar ke luar
                         Container(
-                          width: 190,
-                          height: 190,
+                          width: MediaQuery.of(context).size.width < 400 ? 150 : 190,
+                          height: MediaQuery.of(context).size.width < 400 ? 150 : 190,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                           ),
@@ -105,8 +108,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         // Cincin progress di luar avatar
                         SizedBox(
-                          width: 170,
-                          height: 170,
+                          width: MediaQuery.of(context).size.width < 400 ? 135 : 170,
+                          height: MediaQuery.of(context).size.width < 400 ? 135 : 170,
                           child: CustomPaint(
                             painter: _ProgressRingPainter(progress: _completion),
                           ),
@@ -114,7 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         // Avatar utama
                         CircleAvatar(
-                          radius: 75,
+                          radius: MediaQuery.of(context).size.width < 400 ? 60 : 75,
                           backgroundImage: NetworkImage('https://i.pravatar.cc/200?img=47'),
                         ),
 
@@ -146,9 +149,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 										IconButton(
 											onPressed: () => Navigator.pushNamed(context, '/profile/edit'),
 											icon: CircleAvatar(
-												radius: 28,
+												radius: MediaQuery.of(context).size.width < 400 ? 22 : 28,
 												backgroundColor: Colors.purple.shade800.withOpacity(0.3),
-												child: const Icon(Icons.edit, color: Colors.white),
+												child: Icon(Icons.edit, color: Colors.white, size: MediaQuery.of(context).size.width < 400 ? 18 : 24),
 											),
 										),
 									],
@@ -172,7 +175,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
 					// Cards row
 					Padding(
-						padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+						padding: EdgeInsets.symmetric(
+							horizontal: MediaQuery.of(context).size.width < 400 ? 8 : 12, 
+							vertical: 14
+						),
 						child: Row(
 							mainAxisAlignment: MainAxisAlignment.spaceBetween,
 							children: [
