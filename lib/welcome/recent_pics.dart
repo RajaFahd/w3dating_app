@@ -1,10 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
-class RecentPicsPage extends StatelessWidget {
+class RecentPicsPage extends StatefulWidget {
   const RecentPicsPage({Key? key}) : super(key: key);
 
   @override
+  State<RecentPicsPage> createState() => _RecentPicsPageState();
+}
+
+class _RecentPicsPageState extends State<RecentPicsPage> {
+  final ImagePicker _picker = ImagePicker();
+  final List<File?> _images = List.filled(6, null);
+
+  Future<void> _pickImage(int index) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1800,
+        maxHeight: 1800,
+        imageQuality: 85,
+      );
+      
+      if (pickedFile != null) {
+        setState(() {
+          _images[index] = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick image: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildImageBox(int index, {bool isLarge = false}) {
+    final isSmall = MediaQuery.of(context).size.width < 400;
+    final double largeSize = isSmall ? 220 : 240;
+    final double smallSize = isSmall ? 100 : 110;
+    final double size = isLarge ? largeSize : smallSize;
+    
+    return GestureDetector(
+      onTap: () => _pickImage(index),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A2F45),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white24, style: BorderStyle.solid, width: 2),
+        ),
+        child: _images[index] != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.file(
+                  _images[index]!,
+                  fit: BoxFit.cover,
+                ),
+              )
+            : Center(
+                child: Icon(
+                  Icons.add, 
+                  color: Colors.white70, 
+                  size: isLarge ? 40 : 32,
+                ),
+              ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final isSmall = width < 400;
+
     return Scaffold(
       backgroundColor: const Color(0xFF2B2C33),
       body: SafeArea(
@@ -21,80 +95,69 @@ class RecentPicsPage extends StatelessWidget {
             ),
 
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: isSmall ? 16.0 : 24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 32),
+                    SizedBox(height: isSmall ? 16 : 32),
                     // Title
-                    const Text(
+                    Text(
                       'Add your recent pics',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 26,
+                        fontSize: isSmall ? 22 : 26,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: isSmall ? 20 : 32),
 
-                    // Photo layout: large box on left, two small stacked on right, three small boxes below
-                    Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final gap = 12.0;
-                          final totalWidth = constraints.maxWidth;
-                          final largeWidth = (totalWidth - gap) * 0.66; // left large box ~66%
-                          final smallColumnWidth = totalWidth - largeWidth - gap;
-                          // smallBoxSize intentionally unused — we calculate sizes directly below
-
-                          Widget slot({double? width, double? height, double iconSize = 24}) => SizedBox(
-                                width: width,
-                                height: height,
-                                child: CustomPaint(
-                                  painter: _DashedBorder(color: Colors.white24, strokeWidth: 1.6, radius: 12),
-                                  child: Center(child: Icon(Icons.add, color: Colors.white54, size: iconSize)),
+                    // Photo grid layout
+                    SizedBox(
+                      height: isSmall ? 260 : 255,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Large photo box (left)
+                          _buildImageBox(0, isLarge: true),
+                          
+                          SizedBox(width: isSmall ? 8 : 12),
+                          
+                          // Small photo boxes (right column)
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(child: _buildImageBox(1)),
+                                  ],
                                 ),
-                              );
-
-                          return Column(
-                            children: [
-                              // Top row with large left and two stacked small on right
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Large box
-                                  SizedBox(width: largeWidth, height: largeWidth, child: slot(width: largeWidth, height: largeWidth, iconSize: 36)),
-                                  SizedBox(width: gap),
-                                  // Right column with two small boxes
-                                  Column(
-                                    children: [
-                                      slot(width: smallColumnWidth, height: (largeWidth - gap) / 2, iconSize: 20),
-                                      SizedBox(height: gap),
-                                      slot(width: smallColumnWidth, height: (largeWidth - gap) / 2, iconSize: 20),
-                                    ],
-                                  )
-                                ],
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Bottom row of three small boxes
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  slot(width: (totalWidth - gap * 2) / 3, height: (totalWidth - gap * 2) / 3, iconSize: 20),
-                                  SizedBox(width: gap),
-                                  slot(width: (totalWidth - gap * 2) / 3, height: (totalWidth - gap * 2) / 3, iconSize: 20),
-                                  SizedBox(width: gap),
-                                  slot(width: (totalWidth - gap * 2) / 3, height: (totalWidth - gap * 2) / 3, iconSize: 20),
-                                ],
-                              ),
-                            ],
-                          );
-                        },
+                                SizedBox(height: isSmall ? 8 : 12),
+                                Row(
+                                  children: [
+                                    Expanded(child: _buildImageBox(2)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+
+
+                    // Bottom 3 small boxes
+                    Row(
+                      children: [
+                        Expanded(child: _buildImageBox(3)),
+                        SizedBox(width: isSmall ? 8 : 12),
+                        Expanded(child: _buildImageBox(4)),
+                        SizedBox(width: isSmall ? 8 : 12),
+                        Expanded(child: _buildImageBox(5)),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -102,10 +165,10 @@ class RecentPicsPage extends StatelessWidget {
 
             // Next button
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(isSmall ? 16.0 : 24.0),
               child: SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: isSmall ? 50 : 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
@@ -121,7 +184,7 @@ class RecentPicsPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(colors: [Color(0xFFFF6DA0), Color(0xFFFF3F80)]),
                       borderRadius: BorderRadius.circular(28),
-                      boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))],
+                      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))],
                     ),
                     child: const Center(
                       child: Text(
@@ -142,42 +205,5 @@ class RecentPicsPage extends StatelessWidget {
       ),
     );
   }
-}
-
-
-class _DashedBorder extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-  final double radius;
-
-  _DashedBorder({required this.color, this.strokeWidth = 1.0, this.radius = 8.0});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    const dashWidth = 6.0;
-    const dashSpace = 6.0;
-
-    final path = Path()..addRRect(rrect);
-    final metrics = path.computeMetrics();
-    for (final metric in metrics) {
-      double distance = 0.0;
-      while (distance < metric.length) {
-        final len = dashWidth;
-        final extract = metric.extractPath(distance, distance + len);
-        canvas.drawPath(extract, paint);
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
