@@ -21,9 +21,9 @@ class _SuperLikesSheetState extends State<SuperLikesSheet> {
         maxChildSize: 0.92,
         builder: (context, controller) => Container(
           padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 20),
-          decoration: const BoxDecoration(
-            color: Color(0xFF3A3B43),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -33,12 +33,12 @@ class _SuperLikesSheetState extends State<SuperLikesSheet> {
               const SizedBox(height: 18),
 
               // icon
-              CircleAvatar(radius: 28, backgroundColor: const Color(0xFF4A2A4A), child: Icon(Icons.star, color: Colors.pink.shade200, size: 32)),
+              CircleAvatar(radius: 28, backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.15), child: Icon(Icons.star, color: Theme.of(context).colorScheme.primary, size: 32)),
               const SizedBox(height: 12),
 
-              const Text('Stant out with Super Like', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Stant out with Super Like', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 6),
-              const Text("You're 3x more likely to get a match!", style: TextStyle(color: Colors.white70)),
+              Text("You're 3x more likely to get a match!", style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
               const SizedBox(height: 18),
 
               // options
@@ -57,18 +57,18 @@ class _SuperLikesSheetState extends State<SuperLikesSheet> {
                           child: Container(
                             margin: const EdgeInsets.symmetric(vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF2F3036),
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(8),
-                              border: isSelected ? Border.all(color: Colors.pink.shade300, width: 2) : Border.all(color: Colors.white12),
+                              border: isSelected ? Border.all(color: Theme.of(context).colorScheme.primary, width: 2) : Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2)),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(labels[i], style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                                Text(labels[i], style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 28, fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 6),
-                                Text('Super Likes', style: TextStyle(color: Colors.white70)),
+                                Text('Super Likes', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))),
                                 const SizedBox(height: 6),
-                                Text(price, style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                Text(price, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 12)),
                               ],
                             ),
                           ),

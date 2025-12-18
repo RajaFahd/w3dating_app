@@ -121,9 +121,9 @@ class _EditProfileState extends State<EditProfile> {
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2F45),
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white24, style: BorderStyle.solid, width: 2),
+          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2), style: BorderStyle.solid, width: 2),
         ),
         child: _images[index] != null
             ? ClipRRect(
@@ -133,8 +133,8 @@ class _EditProfileState extends State<EditProfile> {
                   fit: BoxFit.cover,
                 ),
               )
-            : const Center(
-                child: Icon(Icons.add, color: Colors.white70, size: 40),
+            : Center(
+                child: Icon(Icons.add, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), size: 40),
               ),
       ),
     );
@@ -142,26 +142,24 @@ class _EditProfileState extends State<EditProfile> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final width = MediaQuery.of(context).size.width;
     final isSmall = width < 400;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1B1C23),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF212635),
+        backgroundColor: scheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: scheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: Text('Edit Profile', style: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.bold)),
       ),
 
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(isSmall ? 12 : 16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             // Photo grid layout
@@ -261,15 +259,16 @@ class _SettingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A2F45),
+          color: scheme.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2)),
         ),
         child: Row(
           children: [
@@ -278,18 +277,18 @@ class _SettingTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
-                      style: const TextStyle(
-                          color: Colors.white,
+                      style: TextStyle(
+                          color: scheme.onSurface,
                           fontWeight: FontWeight.w600,
                           fontSize: 15)),
                   const SizedBox(height: 4),
                   Text(value,
-                      style: TextStyle(color: Colors.white.withOpacity(0.55))),
+                      style: TextStyle(color: scheme.onSurface.withOpacity(0.65))),
                 ],
               ),
             ),
             if (showArrow)
-              const Icon(Icons.chevron_right, color: Colors.white54),
+              Icon(Icons.chevron_right, color: scheme.onSurface.withOpacity(0.6)),
           ],
         ),
       ),
@@ -337,11 +336,12 @@ class _InterestsModalState extends State<_InterestsModal> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1E2E),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -350,31 +350,24 @@ class _InterestsModalState extends State<_InterestsModal> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white24,
+              color: scheme.onSurface.withOpacity(0.2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Select Interests',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('Select Interests', style: TextStyle(color: scheme.onSurface, fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: scheme.onSurface),
               decoration: InputDecoration(
                 hintText: 'Search interests...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                hintStyle: TextStyle(color: scheme.onSurface.withOpacity(0.4)),
+                prefixIcon: Icon(Icons.search, color: scheme.onSurface.withOpacity(0.6)),
                 filled: true,
-                fillColor: const Color(0xFF2A2F45),
+                fillColor: scheme.surface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -397,7 +390,7 @@ class _InterestsModalState extends State<_InterestsModal> {
                     child: Chip(
                       label: Text(_selected[index]),
                       labelStyle: const TextStyle(color: Colors.white),
-                      backgroundColor: const Color(0xFFE94057),
+                      backgroundColor: scheme.primary,
                       deleteIcon: const Icon(Icons.close, size: 18, color: Colors.white),
                       onDeleted: () {
                         setState(() {
@@ -432,17 +425,15 @@ class _InterestsModalState extends State<_InterestsModal> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFE94057) : const Color(0xFF2A2F45),
+                      color: isSelected ? scheme.primary : scheme.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? const Color(0xFFE94057) : Colors.white12,
-                      ),
+                      border: Border.all(color: isSelected ? scheme.primary : Theme.of(context).dividerColor.withOpacity(0.2)),
                     ),
                     child: Row(
                       children: [
                         Text(
                           interest,
-                          style: const TextStyle(color: Colors.white, fontSize: 15),
+                          style: TextStyle(color: isSelected ? Colors.white : scheme.onSurface, fontSize: 15),
                         ),
                         const Spacer(),
                         if (isSelected)
@@ -465,7 +456,7 @@ class _InterestsModalState extends State<_InterestsModal> {
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE94057),
+                  backgroundColor: scheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -508,11 +499,12 @@ class _RelationshipGoalsModal extends StatelessWidget {
       'Still figuring it out',
     ];
 
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF1A1E2E),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      color: scheme.surface,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -521,28 +513,21 @@ class _RelationshipGoalsModal extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white24,
+              color: scheme.onSurface.withOpacity(0.2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Relationship Goals',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('Relationship Goals', style: TextStyle(color: scheme.onSurface, fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          ...goals.map((goal) => _buildOption(goal)),
+          ...goals.map((goal) => _buildOption(context, goal)),
           const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _buildOption(String goal) {
+  Widget _buildOption(BuildContext context, String goal) {
     final isSelected = goal == selectedGoal;
     return GestureDetector(
       onTap: () => onSelect(goal),
@@ -550,18 +535,16 @@ class _RelationshipGoalsModal extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE94057) : const Color(0xFF2A2F45),
+          color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? const Color(0xFFE94057) : Colors.white12,
-          ),
+          border: Border.all(color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).dividerColor.withOpacity(0.2)),
         ),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 goal,
-                style: const TextStyle(color: Colors.white, fontSize: 15),
+                style: TextStyle(color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface, fontSize: 15),
               ),
             ),
             if (isSelected)
@@ -585,6 +568,7 @@ class _LanguageModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final languages = [
       {'name': 'English', 'flag': '🇬🇧'},
       {'name': 'Indonesia', 'flag': '🇮🇩'},
@@ -602,9 +586,9 @@ class _LanguageModal extends StatelessWidget {
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1E2E),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
@@ -618,14 +602,7 @@ class _LanguageModal extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Language I Know',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('Language I Know', style: TextStyle(color: scheme.onSurface, fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           Expanded(
             child: ListView.builder(
@@ -641,11 +618,9 @@ class _LanguageModal extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFE94057) : const Color(0xFF2A2F45),
+                      color: isSelected ? scheme.primary : scheme.surface,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? const Color(0xFFE94057) : Colors.white12,
-                      ),
+                      border: Border.all(color: isSelected ? scheme.primary : Theme.of(context).dividerColor.withOpacity(0.2)),
                     ),
                     child: Row(
                       children: [
@@ -656,7 +631,7 @@ class _LanguageModal extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(
                           lang['name']!,
-                          style: const TextStyle(color: Colors.white, fontSize: 15),
+                          style: TextStyle(color: isSelected ? Colors.white : scheme.onSurface, fontSize: 15),
                         ),
                         const Spacer(),
                         if (isSelected)
@@ -686,6 +661,7 @@ class _SexualOrientationModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final orientations = [
       'Straight',
       'Gay',
@@ -699,9 +675,9 @@ class _SexualOrientationModal extends StatelessWidget {
     ];
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1E2E),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -711,28 +687,21 @@ class _SexualOrientationModal extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white24,
+              color: scheme.onSurface.withOpacity(0.2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Sexual Orientation',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('Sexual Orientation', style: TextStyle(color: scheme.onSurface, fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          ...orientations.map((orientation) => _buildOption(orientation)),
+          ...orientations.map((orientation) => _buildOption(context, orientation)),
           const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _buildOption(String orientation) {
+  Widget _buildOption(BuildContext context, String orientation) {
     final isSelected = orientation == selectedOrientation;
     return GestureDetector(
       onTap: () => onSelect(orientation),
@@ -740,18 +709,16 @@ class _SexualOrientationModal extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE94057) : const Color(0xFF2A2F45),
+          color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? const Color(0xFFE94057) : Colors.white12,
-          ),
+          border: Border.all(color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).dividerColor.withOpacity(0.2)),
         ),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 orientation,
-                style: const TextStyle(color: Colors.white, fontSize: 15),
+                style: TextStyle(color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface, fontSize: 15),
               ),
             ),
             if (isSelected)

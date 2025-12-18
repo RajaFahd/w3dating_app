@@ -31,12 +31,19 @@ class AppBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+  final scheme = Theme.of(context).colorScheme;
   return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F23),
+        color: scheme.surface,
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(18), topRight: Radius.circular(18)),
-        boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, -2))],
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.black54 : Colors.black12,
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          )
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -53,6 +60,7 @@ class AppBottomNavigation extends StatelessWidget {
 
   Widget _navItem(BuildContext context, IconData icon, int index) {
     final isActive = index == currentIndex;
+    final scheme = Theme.of(context).colorScheme;
     
     return GestureDetector(
       onTap: () => _handleNavigation(context, index),
@@ -60,12 +68,16 @@ class AppBottomNavigation extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFFF3F80) : Colors.transparent,
+          color: isActive ? scheme.primary : Colors.transparent,
           shape: BoxShape.circle,
         ),
         child: Icon(
           icon,
-          color: Colors.white,
+          color: isActive
+              ? Colors.white
+              : Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black87,
           size: 32,
         ),
       ),

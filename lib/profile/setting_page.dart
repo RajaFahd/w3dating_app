@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:w3dating_app/main.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -14,7 +15,7 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1B1C23),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,10 +38,10 @@ class _SettingPageState extends State<SettingPage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Settings',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onBackground,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -111,7 +112,7 @@ class _SettingPageState extends State<SettingPage> {
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1C2932),
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -120,13 +121,13 @@ class _SettingPageState extends State<SettingPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Maximum Distance',
-                                style: TextStyle(color: Colors.white70),
-                              ),
+                             Text(
+                               'Maximum Distance',
+                               style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                             ),
                               Text(
-                                '${maxDistance.toInt()}km',
-                                style: const TextStyle(color: Colors.white),
+                              '${maxDistance.toInt()}km',
+                              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                               ),
                             ],
                           ),
@@ -166,7 +167,7 @@ class _SettingPageState extends State<SettingPage> {
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1C2932),
+                          color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -175,14 +176,73 @@ class _SettingPageState extends State<SettingPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Age Range',
-                                style: TextStyle(color: Colors.white70),
-                              ),
+                                Text(
+                                  'Age Range',
+                                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                                ),
                               Text(
                                 '${ageRange.start.toInt()} - ${ageRange.end.toInt()}',
-                                style: const TextStyle(color: Colors.white),
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                               ),
+                    // Theme mode toggle
+                    Container(
+                      margin: const EdgeInsets.only(top: 12, bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.brightness_6, color: Colors.amber),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Light Mode',
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.onSurface,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Switch between light and dark appearance',
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          StatefulBuilder(
+                            builder: (context, setSB) {
+                              // Try to read app's current theme mode (fallback to system)
+                              bool value = Theme.of(context).brightness == Brightness.light;
+                              return Switch(
+                                value: value,
+                                onChanged: (v) {
+                                  // Access app state to set theme mode
+                                  try {
+                                    // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+                                    final app = W3DatingApp.of(context);
+                                    app.setThemeMode(v ? ThemeMode.light : ThemeMode.dark);
+                                    setSB(() {});
+                                    setState(() {});
+                                  } catch (_) {
+                                    // If accessor not available, do nothing
+                                  }
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                             ],
                           ),
                           const SizedBox(height: 8),

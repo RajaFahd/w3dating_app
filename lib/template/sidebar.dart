@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:w3dating_app/main.dart';
 
 class SideBar extends StatelessWidget {
   const SideBar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Drawer(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: scheme.surface,
       child: SafeArea(
         child: Column(
           children: [
@@ -27,7 +29,7 @@ class SideBar extends StatelessWidget {
                         image: NetworkImage('https://i.pravatar.cc/150?img=1'),
                         fit: BoxFit.cover,
                       ),
-                      border: Border.all(color: Colors.pink.shade400, width: 2),
+                      border: Border.all(color: scheme.primary, width: 2),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -35,20 +37,20 @@ class SideBar extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'John Doe',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: scheme.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
                           'example@gmail.com',
                           style: TextStyle(
-                            color: Color(0xFFFF3F80),
+                            color: scheme.primary,
                             fontSize: 14,
                           ),
                         ),
@@ -58,13 +60,13 @@ class SideBar extends StatelessWidget {
                   // Menu button
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.menu, color: Colors.white),
+                    icon: Icon(Icons.menu, color: scheme.onSurface),
                   ),
                 ],
                 ),
               ),
             ),
-            const Divider(color: Colors.white10),
+            Divider(color: scheme.onSurface.withOpacity(0.08)),
             // Menu items
             _MenuItem(
               icon: Icons.home_outlined,
@@ -112,20 +114,25 @@ class SideBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
                 children: [
-                  const Icon(Icons.dark_mode, color: Colors.white54),
+                  Icon(Icons.dark_mode, color: scheme.onSurface.withOpacity(0.6)),
                   const SizedBox(width: 12),
-                  const Text(
+                  Text(
                     'Dark Mode',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: scheme.onSurface,
                       fontSize: 16,
                     ),
                   ),
                   const Spacer(),
                   Switch(
-                    value: true,
-                    onChanged: (_) {},
-                    activeColor: const Color(0xFFFF3F80),
+                    value: Theme.of(context).brightness == Brightness.dark,
+                    onChanged: (v) {
+                      try {
+                        final app = W3DatingApp.of(context);
+                        app.setThemeMode(v ? ThemeMode.dark : ThemeMode.light);
+                      } catch (_) {}
+                    },
+                    activeColor: scheme.primary,
                   ),
                 ],
               ),
@@ -134,20 +141,20 @@ class SideBar extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
-                children: const [
+                children: [
                   Text(
                     'W3Dating - Dating App',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: scheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     'App Version 1.1',
                     style: TextStyle(
-                      color: Colors.white54,
+                      color: scheme.onSurface.withOpacity(0.6),
                       fontSize: 14,
                     ),
                   ),
@@ -174,16 +181,17 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return ListTile(
-      leading: Icon(icon, color: Colors.white),
+      leading: Icon(icon, color: scheme.onSurface),
       title: Text(
         label,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: scheme.onSurface,
           fontSize: 16,
         ),
       ),
-      trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+      trailing: Icon(Icons.chevron_right, color: scheme.onSurface.withOpacity(0.6)),
       onTap: onTap,
     );
   }

@@ -14,7 +14,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2B2C33),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -33,7 +33,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text('My Subscription', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
+                  Text('My Subscription', style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 18, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -68,7 +68,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: _currentPage == index ? Colors.pink.shade300 : Colors.white24,
+                    color: _currentPage == index ? Theme.of(context).colorScheme.primary : Theme.of(context).dividerColor.withOpacity(0.3),
                     shape: BoxShape.circle,
                   ),
                 );
@@ -82,7 +82,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: ListView(
-                  children: _getFeaturesForCurrentPage(),
+                  children: _getFeaturesForCurrentPage(context),
                 ),
               ),
             ),
@@ -152,59 +152,59 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     );
   }
 
-  List<Widget> _getFeaturesForCurrentPage() {
+  List<Widget> _getFeaturesForCurrentPage(BuildContext context) {
     if (_currentPage == 0) {
       // PLUS
       return [
-        _featureRow('Unlimited Likes', true),
-        _featureRow('See Who Likes You', false, locked: true),
-        _featureRow('Priority Likes', false, locked: true),
-        _featureRow('Unlimited Rewinds', true),
-        _featureRow('1 Free Boost per month', false, locked: true),
-        _featureRow('5 Free Super Likes per week', false, locked: true),
-        _featureRow('Message Before Matching', false, locked: true),
-        _featureRow('Passport', true),
-        _featureRow('Top Picks', false, locked: true),
-        _featureRow('Control Your Profile', true),
-        _featureRow('Control Who Sees You', true),
-        _featureRow('Control Who You See', true),
-        _featureRow('Hide Ads', true),
+        _featureRow(context, 'Unlimited Likes', true),
+        _featureRow(context, 'See Who Likes You', false, locked: true),
+        _featureRow(context, 'Priority Likes', false, locked: true),
+        _featureRow(context, 'Unlimited Rewinds', true),
+        _featureRow(context, '1 Free Boost per month', false, locked: true),
+        _featureRow(context, '5 Free Super Likes per week', false, locked: true),
+        _featureRow(context, 'Message Before Matching', false, locked: true),
+        _featureRow(context, 'Passport', true),
+        _featureRow(context, 'Top Picks', false, locked: true),
+        _featureRow(context, 'Control Your Profile', true),
+        _featureRow(context, 'Control Who Sees You', true),
+        _featureRow(context, 'Control Who You See', true),
+        _featureRow(context, 'Hide Ads', true),
         const SizedBox(height: 24),
       ];
     } else if (_currentPage == 1) {
       // GOLD
       return [
-        _featureRow('Unlimited Likes', true),
-        _featureRow('See Who Likes You', true),
-        _featureRow('Priority Likes', false, locked: true),
-        _featureRow('Unlimited Rewinds', true),
-        _featureRow('1 Free Boost per month', true),
-        _featureRow('5 Free Super Likes per week', true),
-        _featureRow('Message Before Matching', false, locked: true),
-        _featureRow('Passport', true),
-        _featureRow('Top Picks', true),
-        _featureRow('Control Your Profile', true),
-        _featureRow('Control Who Sees You', true),
-        _featureRow('Control Who You See', true),
-        _featureRow('Hide Ads', true),
+        _featureRow(context, 'Unlimited Likes', true),
+        _featureRow(context, 'See Who Likes You', true),
+        _featureRow(context, 'Priority Likes', false, locked: true),
+        _featureRow(context, 'Unlimited Rewinds', true),
+        _featureRow(context, '1 Free Boost per month', true),
+        _featureRow(context, '5 Free Super Likes per week', true),
+        _featureRow(context, 'Message Before Matching', false, locked: true),
+        _featureRow(context, 'Passport', true),
+        _featureRow(context, 'Top Picks', true),
+        _featureRow(context, 'Control Your Profile', true),
+        _featureRow(context, 'Control Who Sees You', true),
+        _featureRow(context, 'Control Who You See', true),
+        _featureRow(context, 'Hide Ads', true),
         const SizedBox(height: 24),
       ];
     } else {
       // PLATINUM
       return [
-        _featureRow('Unlimited Likes', true),
-        _featureRow('See Who Likes You', true),
-        _featureRow('Priority Likes', true),
-        _featureRow('Unlimited Rewinds', true),
-        _featureRow('1 Free Boost per month', true),
-        _featureRow('5 Free Super Likes per week', true),
-        _featureRow('Message Before Matching', true),
-        _featureRow('Passport', true),
-        _featureRow('Top Picks', true),
-        _featureRow('Control Your Profile', true),
-        _featureRow('Control Who Sees You', true),
-        _featureRow('Control Who You See', true),
-        _featureRow('Hide Ads', true),
+        _featureRow(context, 'Unlimited Likes', true),
+        _featureRow(context, 'See Who Likes You', true),
+        _featureRow(context, 'Priority Likes', true),
+        _featureRow(context, 'Unlimited Rewinds', true),
+        _featureRow(context, '1 Free Boost per month', true),
+        _featureRow(context, '5 Free Super Likes per week', true),
+        _featureRow(context, 'Message Before Matching', true),
+        _featureRow(context, 'Passport', true),
+        _featureRow(context, 'Top Picks', true),
+        _featureRow(context, 'Control Your Profile', true),
+        _featureRow(context, 'Control Who Sees You', true),
+        _featureRow(context, 'Control Who You See', true),
+        _featureRow(context, 'Hide Ads', true),
         const SizedBox(height: 24),
       ];
     }
@@ -230,14 +230,14 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     }
   }
 
-  Widget _featureRow(String title, bool enabled, {bool locked = false}) {
+  Widget _featureRow(BuildContext context, String title, bool enabled, {bool locked = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(locked ? Icons.lock_outline : Icons.check, color: locked ? Colors.white24 : Colors.white, size: 20),
+          Icon(locked ? Icons.lock_outline : Icons.check, color: locked ? Theme.of(context).colorScheme.onSurface.withOpacity(0.3) : Theme.of(context).colorScheme.primary, size: 20),
           const SizedBox(width: 12),
-          Text(title, style: TextStyle(color: locked ? Colors.white24 : Colors.white, fontSize: 16)),
+          Text(title, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(locked ? 0.5 : 1.0), fontSize: 16)),
         ],
       ),
     );

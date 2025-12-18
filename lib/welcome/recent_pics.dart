@@ -80,7 +80,7 @@ class _RecentPicsPageState extends State<RecentPicsPage> {
     final isSmall = width < 400;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2B2C33),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

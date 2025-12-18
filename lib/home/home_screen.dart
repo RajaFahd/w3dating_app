@@ -100,7 +100,8 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context) => MatchScreenPage(
                 matchName: likedProfile['name'] as String,
                 userImageUrl: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400',
-                matchImageUrl: likedProfile['imageUrl'] as String,
+                // Home uses local asset path under key 'image'; pass that safely
+                matchImageUrl: likedProfile['image'] as String,
               ),
             ),
           );
@@ -119,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1B1C23),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: const SideBar(),
       appBar: AppBar(
         backgroundColor: Colors.transparent,

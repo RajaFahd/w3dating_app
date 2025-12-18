@@ -19,7 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 	Widget build(BuildContext context) {
 		final theme = Theme.of(context);
 		return Scaffold(
-			backgroundColor: const Color(0xFF2B2C33),
+			backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 			appBar: AppBar(
 				backgroundColor: Colors.transparent,
 				elevation: 0,
@@ -72,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 							vertical: MediaQuery.of(context).size.height < 800 ? 16 : 26, 
 							horizontal: MediaQuery.of(context).size.width < 400 ? 16 : 34
 						),
-						color: const Color(0xFF2B2C33),
+						color: Theme.of(context).scaffoldBackgroundColor,
 						child: Column(
 							children: [
 								Row(

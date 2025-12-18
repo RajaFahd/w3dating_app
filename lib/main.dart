@@ -21,32 +21,36 @@ import 'package:w3dating_app/profile/edit_profile.dart';
 import 'package:w3dating_app/profile/filter.dart';
 import 'package:w3dating_app/profile/setting_page.dart';
 import 'package:w3dating_app/profile/subscription_page.dart';
+import 'package:w3dating_app/theme/app_theme.dart';
 
 void main() {
   runApp(const W3DatingApp());
 }
 
-class W3DatingApp extends StatelessWidget {
+class W3DatingApp extends StatefulWidget {
   const W3DatingApp({Key? key}) : super(key: key);
+
+  static _W3DatingAppState of(BuildContext context) => context.findAncestorStateOfType<_W3DatingAppState>()!;
+
+  @override
+  State<W3DatingApp> createState() => _W3DatingAppState();
+}
+
+class _W3DatingAppState extends State<W3DatingApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  void setThemeMode(ThemeMode mode) {
+    setState(() => _themeMode = mode);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final dark = const Color(0xFF2E2E34);
-    final accent = const Color(0xFFFE5F9F);
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'W3 Dating',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: dark,
-        primaryColor: accent,
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFF333238),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-        ),
-      ),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: _themeMode,
       initialRoute: '/match_screen',
       routes: {
         '/match_screen': (ctx) => const MatchScreenPage(),

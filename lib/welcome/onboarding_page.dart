@@ -131,7 +131,7 @@ class OnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = const Color(0xFF2B2C33);
+  final bg = Theme.of(context).scaffoldBackgroundColor;
     final pink = const Color(0xFFFE6E9F);
     final lightPink = const Color(0xFFFFC0D6);
     final width = MediaQuery.of(context).size.width;

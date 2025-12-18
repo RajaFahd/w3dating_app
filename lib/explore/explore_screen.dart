@@ -26,10 +26,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
 	@override
 	Widget build(BuildContext context) {
-		final bg = const Color(0xFF1B1C23);
+        // background color now from Theme.scaffoldBackgroundColor
 
 		return Scaffold(
-			backgroundColor: bg,
+			backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 			appBar: AppBar(
 				backgroundColor: Colors.transparent,
 				elevation: 0,

@@ -35,7 +35,7 @@ class _ChatScreenState extends State<ChatScreen> {
 		if (arg is MessageItem) msg = arg;
 
 		return Scaffold(
-			backgroundColor: const Color(0xFF1B1C23),
+			backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 			appBar: AppBar(
 				backgroundColor: Colors.transparent,
 				elevation: 0,

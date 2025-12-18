@@ -7,7 +7,7 @@ class ProfileDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     final image = 'https://picsum.photos/600/900?random=42';
     return Scaffold(
-      backgroundColor: const Color(0xFF2B2C33),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

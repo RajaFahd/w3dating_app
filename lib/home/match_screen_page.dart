@@ -290,18 +290,31 @@ class _MatchScreenPageState extends State<MatchScreenPage> with SingleTickerProv
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(17),
-            child: Image.network(
-              imageUrl,
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: Colors.grey[800],
-                  child: const Icon(Icons.person, size: 80, color: Colors.white38),
-                );
-              },
-            ),
+            child: imageUrl.startsWith('http')
+                ? Image.network(
+                    imageUrl,
+                    width: width,
+                    height: height,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[800],
+                        child: const Icon(Icons.person, size: 80, color: Colors.white38),
+                      );
+                    },
+                  )
+                : Image.asset(
+                    imageUrl,
+                    width: width,
+                    height: height,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[800],
+                        child: const Icon(Icons.person, size: 80, color: Colors.white38),
+                      );
+                    },
+                  ),
           ),
           // Heart icon with pink background
           Align(
