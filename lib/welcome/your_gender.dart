@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
 
 class YourGenderPage extends StatefulWidget {
 	const YourGenderPage({Key? key}) : super(key: key);
@@ -115,7 +117,16 @@ class _YourGenderPageState extends State<YourGenderPage> {
 										backgroundColor: const Color(0xFFFF3F80),
 										shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
 									),
-									onPressed: () => Navigator.pushNamed(context, '/orientation'),
+									onPressed: () {
+							if (selected != null) {
+								Provider.of<ProfileProvider>(context, listen: false).setGender(selected!);
+								Navigator.pushNamed(context, '/orientation');
+							} else {
+								ScaffoldMessenger.of(context).showSnackBar(
+									const SnackBar(content: Text('Please select your gender')),
+								);
+							}
+						},
 									child: const Text(
 										'Next',
 										style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),

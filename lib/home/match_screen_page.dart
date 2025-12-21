@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:w3dating_app/chat/chat_list.dart';
 import 'dart:math' as math;
 
 class MatchScreenPage extends StatefulWidget {
   final String matchName;
   final String userImageUrl;
   final String matchImageUrl;
+  final int matchUserId;
 
   const MatchScreenPage({
     Key? key,
     this.matchName = 'Marianne',
     this.userImageUrl = 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400',
     this.matchImageUrl = 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400',
+    this.matchUserId = 1,
   }) : super(key: key);
 
   @override
@@ -197,14 +198,12 @@ class _MatchScreenPageState extends State<MatchScreenPage> with SingleTickerProv
                                 Navigator.pushReplacementNamed(
                                   context,
                                   '/chat_screen',
-                                  arguments: MessageItem(
-                                    name: widget.matchName,
-                                    message: '',
-                                    time: 'Now',
-                                    avatarUrl: widget.matchImageUrl,
-                                    isRead: false,
-                                    isOnline: true,
-                                  ),
+                                  arguments: {
+                                    'user_id': widget.matchUserId,
+                                    'name': widget.matchName,
+                                    'avatar': widget.matchImageUrl,
+                                    'is_online': true,
+                                  },
                                 );
                               },
                               child: Ink(

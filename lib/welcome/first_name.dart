@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
 
 class FirstNamePage extends StatefulWidget {
   const FirstNamePage({Key? key}) : super(key: key);
@@ -99,7 +101,15 @@ class _FirstNamePageState extends State<FirstNamePage> {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/birth_date');
+                    if (_nameController.text.trim().isNotEmpty) {
+                      Provider.of<ProfileProvider>(context, listen: false)
+                          .setFirstName(_nameController.text.trim());
+                      Navigator.pushNamed(context, '/birth_date');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please enter your name')),
+                      );
+                    }
                   },
                   child: const Text(
                     'Next',

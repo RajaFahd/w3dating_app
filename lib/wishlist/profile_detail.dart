@@ -1,11 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../config/api_config.dart';
+import '../services/api_service.dart';
 
 class ProfileDetail extends StatelessWidget {
   const ProfileDetail({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final image = 'https://picsum.photos/600/900?random=42';
+    final args = (ModalRoute.of(context)?.settings.arguments as Map?) ?? {};
+    final image = (args['image'] as String?) ?? '';
+    final name = (args['name'] ?? 'Unknown').toString();
+    final age = (args['age'] ?? '').toString();
+    final city = (args['city'] ?? '').toString();
+    final bio = (args['bio'] ?? '').toString();
+    final language = (args['language'] ?? '').toString();
+    final interests = (args['interest'] as List?)?.map((e) => e.toString()).toList() ?? <String>[];
+
+    String _absolutePhotoUrl(String? photoUrl) {
+      if (photoUrl == null || photoUrl.isEmpty) return '';
+      if (photoUrl.startsWith('http')) return photoUrl;
+      final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+      return '$baseUrl$photoUrl';
+    }
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -28,12 +45,34 @@ class ProfileDetail extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                     child: Stack(
                       children: [
-                        Image.network(
-                          image,
-                          width: double.infinity,
-                          height: 420,
-                          fit: BoxFit.cover,
-                        ),
+                        if (_absolutePhotoUrl(image).isEmpty)
+                          Container(
+                            width: double.infinity,
+                            height: 420,
+                            color: const Color(0xFF0E1222),
+                            child: const Center(
+                              child: Icon(Icons.person_outline, color: Colors.white54, size: 64),
+                            ),
+                          )
+                        else
+                          CachedNetworkImage(
+                            imageUrl: _absolutePhotoUrl(image),
+                            width: double.infinity,
+                            height: 420,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: const Color(0xFF0E1222),
+                              child: const Center(
+                                child: CircularProgressIndicator(color: Color(0xFFFF3F80)),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: const Color(0xFF0E1222),
+                              child: const Center(
+                                child: Icon(Icons.broken_image, color: Colors.white54, size: 48),
+                              ),
+                            ),
+                          ),
                         Container(
                           height: 420,
                           decoration: BoxDecoration(
@@ -45,10 +84,17 @@ class ProfileDetail extends StatelessWidget {
                           bottom: 18,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text('Chelsea, 21', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                              SizedBox(height: 6),
-                              Text('5 miles away', style: TextStyle(color: Colors.white70)),
+                            children: [
+                              Text('$name, $age', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 6),
+                              if (city.isNotEmpty)
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_on, color: Colors.white70, size: 14),
+                                    const SizedBox(width: 4),
+                                    Text(city, style: const TextStyle(color: Colors.white70)),
+                                  ],
+                                ),
                             ],
                           ),
                         ),
@@ -75,10 +121,8 @@ class ProfileDetail extends StatelessWidget {
                     children: [
                       const Text('Basic information', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Just moved back to jakarata after living at India for 10+ years. Di luar terliat cenger - center di dalam.',
-                        style: TextStyle(color: Colors.white70),
-                      ),
+                      if (bio.isNotEmpty)
+                        Text(bio, style: const TextStyle(color: Colors.white70)),
                       const SizedBox(height: 16),
 
                       const Text('Interests', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
@@ -87,22 +131,22 @@ class ProfileDetail extends StatelessWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _chipLabel(Icons.camera_alt, 'Photography'),
-                          _chipLabel(Icons.music_note, 'Music'),
-                          _chipLabel(Icons.school, 'Study'),
-                          _chipLabel(Icons.movie, 'Movies'),
-                          _chipLabel(Icons.camera, 'Instagram'),
-                          _chipLabel(Icons.travel_explore, 'Travelling'),
+                          for (final interest in interests)
+                            _chipLabel(Icons.local_fire_department, interest),
+                          if (interests.isEmpty)
+                            const Text('No interests listed', style: TextStyle(color: Colors.white54)),
                         ],
                       ),
 
                       const SizedBox(height: 18),
                       const Text('Languages', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      Wrap(spacing: 8, children: const [
-                        _LangChip('English'),
-                        _LangChip('Spanish'),
-                      ]),
+                      if (language.isNotEmpty)
+                        Wrap(spacing: 8, children: [
+                          _LangChip(language),
+                        ])
+                      else
+                        const Text('No languages listed', style: TextStyle(color: Colors.white54)),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -121,11 +165,42 @@ class ProfileDetail extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _actionCircle(icon: Icons.close, bg: Colors.grey.shade800, onTap: () => Navigator.pop(context)),
+                  // Dislike button
+                  _actionCircle(
+                    icon: Icons.close,
+                    bg: Colors.grey.shade800,
+                    onTap: () async {
+                      final userId = args['user_id'] as int?;
+                      if (userId != null) {
+                        try {
+                          // Call backend to remove like from wishlist
+                          final api = ApiService();
+                          await api.unlikeUser(userId);
+                        } catch (_) {
+                          // ignore error, still pop
+                        }
+                      }
+                      Navigator.pop(context, true); // signal removal
+                    },
+                  ),
                   const SizedBox(width: 20),
-                  _actionCircle(icon: Icons.star, bg: Colors.blue.shade700, onTap: () => Navigator.pop(context)),
-                  const SizedBox(width: 20),
-                  _actionCircle(icon: Icons.favorite, bg: Colors.pink.shade400, onTap: () => Navigator.pop(context)),
+                  // Message button -> navigate to chat screen
+                  _actionCircle(
+                    icon: Icons.message,
+                    bg: Colors.pink.shade400,
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/chat_screen',
+                        arguments: {
+                          'user_id': args['user_id'],
+                          'name': name,
+                          'avatar': _absolutePhotoUrl(image),
+                          // is_online optional; omit if not available
+                        },
+                      );
+                    },
+                  ),
                 ],
               ),
             ),

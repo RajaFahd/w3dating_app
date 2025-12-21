@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
 
 class EnterBirthDate extends StatefulWidget {
   const EnterBirthDate({Key? key}) : super(key: key);
@@ -71,11 +73,11 @@ class _EnterBirthDateState extends State<EnterBirthDate> {
                             child: TextField(
                               controller: _dateController,
                               style: const TextStyle(color: Colors.white, fontSize: 16),
-                              keyboardType: TextInputType.datetime,
+                              keyboardType: TextInputType.number,
                               inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'[0-9/]')),
-                                LengthLimitingTextInputFormatter(10),
-                                _DateInputFormatter(),
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(8), // mmddyyyy
+                                _DateTextInputFormatter(),
                               ],
                               decoration: const InputDecoration(
                                 hintText: 'mm/dd/yyyy',
@@ -106,7 +108,23 @@ class _EnterBirthDateState extends State<EnterBirthDate> {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/your_gender');
+                    final dateText = _dateController.text.trim();
+                    if (dateText.isNotEmpty && dateText.length == 10) {
+                      try {
+                        final parts = dateText.split('/');
+                        final date = DateTime(int.parse(parts[2]), int.parse(parts[0]), int.parse(parts[1]));
+                        Provider.of<ProfileProvider>(context, listen: false).setBirthDate(date);
+                        Navigator.pushNamed(context, '/your_gender');
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Invalid date format')),
+                        );
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please enter your birth date')),
+                      );
+                    }
                   },
                   child: const Text(
                     'Next',
@@ -126,31 +144,32 @@ class _EnterBirthDateState extends State<EnterBirthDate> {
   }
 }
 
-class _DateInputFormatter extends TextInputFormatter {
+class _DateTextInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    var text = newValue.text;
+    // Keep only digits and cap to 8 (mmddyyyy)
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final capped = digitsOnly.length > 8 ? digitsOnly.substring(0, 8) : digitsOnly;
 
-    if (newValue.selection.baseOffset == 0) {
-      return newValue;
+    String formatted;
+    if (capped.length <= 2) {
+      formatted = capped; // m, mm
+    } else if (capped.length <= 4) {
+      formatted = '${capped.substring(0, 2)}/${capped.substring(2)}'; // mm/dd
+    } else {
+      // mm/dd/yyyy (partial allowed)
+      final mm = capped.substring(0, 2);
+      final dd = capped.substring(2, 4);
+      final yyyy = capped.substring(4);
+      formatted = '$mm/$dd/$yyyy';
     }
 
-    var buffer = StringBuffer();
-    for (int i = 0; i < text.length; i++) {
-      buffer.write(text[i]);
-      var nonZeroIndex = i + 1;
-      if (nonZeroIndex <= 4 && nonZeroIndex % 2 == 0 && nonZeroIndex != text.length) {
-        buffer.write('/');
-      }
-    }
-
-    var string = buffer.toString();
-    return newValue.copyWith(
-      text: string,
-      selection: TextSelection.collapsed(offset: string.length),
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

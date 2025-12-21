@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:w3dating_app/template/bottom_navigation.dart';
 import 'package:w3dating_app/template/sidebar.dart';
 import 'package:w3dating_app/home/match_screen_page.dart';
-import 'dart:math' as math;
+import 'package:cached_network_image/cached_network_image.dart';
+import '../services/api_service.dart';
+import '../providers/swipe_provider.dart';
+import '../config/api_config.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -12,10 +16,103 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // ========================================
-  // DATA PROFIL - Ganti dengan data Anda
-  // ========================================
-  final List<Map<String, dynamic>> _profiles = [
+  final ApiService _apiService = ApiService();
+  bool _isInitialized = false;
+  bool _isReloading = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadProfiles();
+  }
+
+  Future<void> _loadProfiles() async {
+    final swipeProvider = Provider.of<SwipeProvider>(context, listen: false);
+    
+    // Prevent multiple simultaneous calls
+    if (_isReloading) return;
+    
+    _isReloading = true;
+    swipeProvider.setLoading(true);
+
+    try {
+      final response = await _apiService.getProfiles();
+      if (response['success'] == true) {
+        final List<dynamic> data = response['data'] ?? [];
+        
+        // Backend automatically handles fallback:
+        // 1. Preferred gender -> 2. All genders -> 3. Liked profiles
+        
+        // Transform API data to UI format
+        final profiles = data.map((item) {
+          final profile = item['profile'] ?? {};
+          final photos = (item['photos'] as List?) ?? [];
+          final interests = (item['interests'] as List?) ?? [];
+          final interestJson = (profile['interest'] as List?) ?? [];
+          
+          // Calculate age from birth_date
+          int age = 0;
+          if (profile['birth_date'] != null) {
+            try {
+              final birthDate = DateTime.parse(profile['birth_date']);
+              age = DateTime.now().year - birthDate.year;
+            } catch (_) {}
+          }
+          
+          // Get first photo URL
+          String? photoUrl;
+          if (photos.isNotEmpty) {
+            photoUrl = photos[0]['photo_url'];
+            // Make absolute URL if relative
+            if (photoUrl != null && !photoUrl.startsWith('http')) {
+              final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+              photoUrl = '$baseUrl$photoUrl';
+            }
+          }
+          
+          return {
+            'user_id': item['id'],
+            'name': profile['first_name'] ?? 'Unknown',
+            'age': age.toString(),
+            'location': profile['city'] ?? 'Unknown',
+            'distance': item['distance'] ?? '',
+            'image': photoUrl ?? '',
+            'bio': profile['bio'] ?? '',
+            // Pivot interests list
+            'interests': interests.map((i) => i['name'] ?? '').toList(),
+            // Profile JSON interests (new schema)
+            'interest': interestJson.map((e) => e.toString()).toList(),
+            'isNew': false, // Could add logic based on created_at
+          };
+        }).toList();
+        
+        swipeProvider.setProfiles(profiles);
+      }
+    } catch (e) {
+      swipeProvider.setError(e.toString().replaceAll('Exception: ', ''));
+    } finally {
+      setState(() {
+        _isInitialized = true;
+        _isReloading = false;
+      });
+    }
+  }
+
+  Future<void> _resetSwipesAndReload() async {
+    try {
+      // Call backend to reset swipes (clear all swipes for fresh load)
+      await _apiService.post('/swipes/reset', body: {});
+      // Reload profiles
+      _loadProfiles();
+    } catch (e) {
+      // If reset fails, just reload (backend might not support reset)
+      _loadProfiles();
+    }
+  }
+
+  // Old hardcoded profiles - kept for reference
+  // ignore: unused_field
+  final List<Map<String, dynamic>> _profilesOld = [
     {
       'name': 'Davina Karamoy',
       'age': '21',
@@ -85,34 +182,95 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
   // ========================================
 
-  void _onLike() {
-    // Feedback sudah ditampilkan di card dengan icon
-    // Simulasi random match (30% chance to show match screen)
-    if (math.Random().nextDouble() < 0.3) {
-      // Ambil profil yang sedang di-like (profil terakhir)
-      final likedProfile = _profiles.isNotEmpty ? _profiles.last : null;
-      
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted && likedProfile != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MatchScreenPage(
-                matchName: likedProfile['name'] as String,
-                userImageUrl: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400',
-                // Home uses local asset path under key 'image'; pass that safely
-                matchImageUrl: likedProfile['image'] as String,
+  Future<void> _onLike() async {
+    final swipeProvider = Provider.of<SwipeProvider>(context, listen: false);
+    final currentProfile = swipeProvider.currentProfile;
+    
+    if (currentProfile == null) return;
+
+    try {
+      final response = await _apiService.swipe(
+        targetUserId: currentProfile['user_id'],
+        type: 'like',
+      );
+
+      if (response['success'] == true) {
+        // Check if matched
+        if (response['is_match'] == true && response['match_data'] != null) {
+          final matchData = response['match_data'];
+          
+          // Show match screen
+          if (mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+              builder: (context) {
+                // Get match photo URL
+                String matchPhotoUrl = '';
+                if (matchData['photos'] != null && (matchData['photos'] as List).isNotEmpty) {
+                  matchPhotoUrl = matchData['photos'][0]['photo_url'] ?? '';
+                  if (matchPhotoUrl.isNotEmpty && !matchPhotoUrl.startsWith('http')) {
+                    final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+                    matchPhotoUrl = '$baseUrl$matchPhotoUrl';
+                  }
+                }
+                
+                return MatchScreenPage(
+                  matchName: matchData['profile']?['first_name'] ?? 'Unknown',
+                  userImageUrl: currentProfile['image'] ?? '',
+                  matchImageUrl: matchPhotoUrl,
+                  matchUserId: matchData['id'] ?? 0,
+                );
+              },
               ),
-            ),
-          );
+            );
+          }
         }
-      });
+        
+        // Remove profile from stack
+        swipeProvider.removeCurrentProfile();
+        
+        // Load more if running low (always keep profiles coming)
+        if (swipeProvider.profiles.length < 2) {
+          _loadProfiles();
+        }
+      }
+    } catch (e) {
+      _showError(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
-  void _onDislike() {
-    // Feedback sudah ditampilkan di card dengan icon
-    // Bisa tambahkan logic lain seperti save to database
+  Future<void> _onDislike() async {
+    final swipeProvider = Provider.of<SwipeProvider>(context, listen: false);
+    final currentProfile = swipeProvider.currentProfile;
+    
+    if (currentProfile == null) return;
+
+    try {
+      await _apiService.swipe(
+        targetUserId: currentProfile['user_id'],
+        type: 'dislike',
+      );
+      
+      swipeProvider.removeCurrentProfile();
+      
+      if (swipeProvider.profiles.length < 2) {
+        _loadProfiles();
+      }
+    } catch (e) {
+      _showError(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -153,20 +311,65 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: SafeArea(
-		child: Column(
-			children: [
-			Expanded( // ✅ Ganti SizedBox yang fix height jadi Expand flex
-				child: Center(
-				child: SwipeCardStack(
-					profiles: _profiles,
-					onLike: _onLike,
-					onDislike: _onDislike,
-				),
-				),
-			),
-			],
-		),
-	  ),
+        child: Consumer<SwipeProvider>(
+          builder: (context, swipeProvider, child) {
+            if (swipeProvider.isLoading && !_isInitialized) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFFFF3F80)),
+              );
+            }
+
+            if (swipeProvider.error != null) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.white54, size: 64),
+                    const SizedBox(height: 16),
+                    Text(
+                      swipeProvider.error!,
+                      style: const TextStyle(color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _loadProfiles,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF3F80),
+                      ),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (!swipeProvider.hasProfiles) {
+              // Auto-reload when profiles are empty (only once)
+              if (!_isReloading) {
+                Future.microtask(() => _resetSwipesAndReload());
+              }
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFFFF3F80)),
+              );
+            }
+
+            return Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: SwipeCardStack(
+                      profiles: swipeProvider.profiles,
+                      onLike: _onLike,
+                      onDislike: _onDislike,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
 
       bottomNavigationBar: AppBottomNavigation(currentIndex: 0),
     );
@@ -322,29 +525,51 @@ class _SwipeCardStackState extends State<SwipeCardStack> with SingleTickerProvid
                     child: Stack(
                     children: [
                       Positioned.fill(
-                        child: Image.asset(
-                          profile['image'] as String,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            // Fallback jika gambar tidak ditemukan
-                            return Container(
-                              color: Colors.grey[900],
-                              child: const Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.person_outline, color: Colors.white54, size: 80),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      'Image not found',
-                                      style: TextStyle(color: Colors.white54),
+                        child: (profile['image'] as String).isEmpty
+                            ? Container(
+                                color: Colors.grey[900],
+                                child: const Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.person_outline, color: Colors.white54, size: 80),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'No photo',
+                                        style: TextStyle(color: Colors.white54),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: profile['image'] as String,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.grey[900],
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Color(0xFFFF3F80),
                                     ),
-                                  ],
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.grey[900],
+                                  child: const Center(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.person_outline, color: Colors.white54, size: 80),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          'Image not available',
+                                          style: TextStyle(color: Colors.white54),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
-                            );
-                          },
-                        ),
                       ),
                       
                       // Feedback overlay - Like di kiri atas
@@ -509,32 +734,36 @@ class _SwipeCardStackState extends State<SwipeCardStack> with SingleTickerProvid
                               ],
                             ),
                             const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                for (final interest in profile['interests'] as List)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.pink.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: Colors.pink.withOpacity(0.5),
-                                        width: 1,
+                            // Show interests from user_profiles.interest (JSON array)
+                            Builder(builder: (context) {
+                              final display = (profile['interest'] as List?)?.map((e) => e.toString()).toList() ?? [];
+                              return Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  for (final interest in display)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.pink.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: Colors.pink.withOpacity(0.5),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        interest,
+                                        style: TextStyle(
+                                          color: Colors.pink.shade200,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ),
-                                    child: Text(
-                                      interest,
-                                      style: TextStyle(
-                                        color: Colors.pink.shade200,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                                ],
+                              );
+                            }),
                           ],
                         ),
                       ),

@@ -50,9 +50,9 @@ class AppTheme {
   }
 
   static ThemeData light() {
-    const bg = Color(0xFFF6F7FB);
-    const surface = Colors.white;
-    const surfaceAlt = Color(0xFFF0F2F7);
+    const bg = Colors.white;
+    const surface = Color(0xFFFAFAFA);
+    const surfaceAlt = Color(0xFFF5F5F5);
 
     return ThemeData(
       brightness: Brightness.light,
@@ -63,19 +63,23 @@ class AppTheme {
         primary: _primary,
         secondary: _secondary,
         surface: surface,
-        background: bg,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: Colors.black,
+        foregroundColor: Color(0xFF1A1A1A),
+        iconTheme: IconThemeData(color: Color(0xFF1A1A1A)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surface,
+        fillColor: const Color(0xFFF5F5F5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE3E6EE)),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
         ),
       ),
       extensions: const [
@@ -83,11 +87,11 @@ class AppTheme {
           background: bg,
           surface: surface,
           surfaceAlt: surfaceAlt,
-          onBackground: Colors.black,
-          onSurface: Colors.black,
-          border: Color(0xFFE3E6EE),
-          chipBg: Color(0x14E94057),
-          chipText: Color(0xFFE94057),
+          onBackground: Color(0xFF1A1A1A),
+          onSurface: Color(0xFF2A2A2A),
+          border: Color(0xFFE0E0E0),
+          chipBg: Color(0x1AE94057),
+          chipText: Color(0xFFD81B60),
           accent: _primary,
         ),
       ],

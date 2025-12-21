@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
 
 class OrientationPage extends StatefulWidget {
   const OrientationPage({Key? key}) : super(key: key);
@@ -129,7 +131,15 @@ class _OrientationPageState extends State<OrientationPage> {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/interested');
+                    if (selectedOrientation != null) {
+                      Provider.of<ProfileProvider>(context, listen: false)
+                          .setSexualOrientation(selectedOrientation!);
+                      Navigator.pushNamed(context, '/interested');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please select your orientation')),
+                      );
+                    }
                   },
                   child: const Text(
                     'Next',

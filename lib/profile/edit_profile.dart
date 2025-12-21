@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
+import '../services/api_service.dart';
+import '../config/api_config.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -10,14 +13,142 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
+  final ApiService _apiService = ApiService();
   final ImagePicker _picker = ImagePicker();
   final List<File?> _images = List.filled(6, null);
+  final List<String?> _existingPhotoUrls = List.filled(6, null);
+  
+  bool _isLoading = true;
+  bool _isSaving = false;
   
   // State for editable fields
-  List<String> _selectedInterests = ['Photography', 'Tea', 'Travel'];
-  String _selectedRelationshipGoal = 'Long-term partner';
-  String _selectedLanguage = 'English';
-  String _selectedSexualOrientation = 'Straight';
+  List<String> _selectedInterests = [];
+  List<Map<String, dynamic>> _allInterestsFromApi = []; // Store all interests with IDs
+  String _selectedRelationshipGoal = '';
+  String _selectedLanguage = '';
+  String _selectedSexualOrientation = '';
+  String _bio = '';
+  String _occupation = '';
+  String _city = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+    _loadAllInterests();
+  }
+
+  Future<void> _loadAllInterests() async {
+    try {
+      final response = await _apiService.get('/interests');
+      if (response['success'] == true) {
+        setState(() {
+          _allInterestsFromApi = List<Map<String, dynamic>>.from(response['data']);
+        });
+      }
+    } catch (e) {
+      print('Failed to load interests: $e');
+    }
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final response = await _apiService.get('/profile/me');
+      if (response['success'] == true) {
+        final data = response['data'];
+        final profile = data['profile'];
+        final photos = (data['photos'] as List?) ?? [];
+        final interests = (data['interests'] as List?) ?? [];
+        
+        setState(() {
+          _selectedRelationshipGoal = profile['looking_for'] ?? 'Long-term partner';
+          _selectedLanguage = profile['language'] ?? 'English';
+          _selectedSexualOrientation = profile['sexual_orientation'] ?? 'Straight';
+          _bio = profile['bio'] ?? '';
+          _occupation = profile['occupation'] ?? '';
+          _city = profile['city'] ?? '';
+          _selectedInterests = interests.map((i) => i['name'].toString()).toList();
+          
+          // Load existing photos
+          for (var i = 0; i < photos.length && i < 6; i++) {
+            _existingPhotoUrls[i] = photos[i]['photo_url'];
+          }
+          
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load profile: $e')),
+        );
+      }
+    }
+  }
+
+  String _getPhotoUrl(String? photoUrl) {
+    if (photoUrl == null || photoUrl.isEmpty) return '';
+    if (photoUrl.startsWith('http')) return photoUrl;
+    final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+    return '$baseUrl$photoUrl';
+  }
+
+  Future<void> _saveProfile() async {
+    setState(() => _isSaving = true);
+    
+    try {
+      // Update profile text fields
+      final updateResponse = await _apiService.put('/profile/update', body: {
+        'looking_for': _selectedRelationshipGoal,
+        'language': _selectedLanguage,
+        'sexual_orientation': _selectedSexualOrientation,
+        'bio': _bio,
+        'city': _city,
+        'interest': _selectedInterests,
+      });
+      
+      if (updateResponse['success'] == true) {
+        // Update interests if any selected
+        if (_selectedInterests.isNotEmpty && _allInterestsFromApi.isNotEmpty) {
+          // Map interest names to IDs
+          final interestIds = _selectedInterests
+              .map((name) {
+                final interest = _allInterestsFromApi.firstWhere(
+                  (i) => i['name'].toString().toLowerCase() == name.toLowerCase(),
+                  orElse: () => {'id': null},
+                );
+                return interest['id'];
+              })
+              .where((id) => id != null)
+              .toList();
+          
+          if (interestIds.isNotEmpty) {
+            await _apiService.post('/profile/interests', body: {
+              'interest_ids': interestIds,
+            });
+          }
+        }
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile updated successfully')),
+          );
+          Navigator.pop(context, true); // Return true to indicate success
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save profile: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isSaving = false);
+    }
+  }
 
   Future<void> _pickImage(int index) async {
     try {
@@ -52,6 +183,7 @@ class _EditProfileState extends State<EditProfile> {
       backgroundColor: Colors.transparent,
       builder: (context) => _InterestsModal(
         selectedInterests: _selectedInterests,
+        allInterestsFromApi: _allInterestsFromApi,
         onSave: (interests) {
           setState(() {
             _selectedInterests = interests;
@@ -133,9 +265,19 @@ class _EditProfileState extends State<EditProfile> {
                   fit: BoxFit.cover,
                 ),
               )
-            : Center(
-                child: Icon(Icons.add, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), size: 40),
-              ),
+            : _existingPhotoUrls[index] != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: CachedNetworkImage(
+                      imageUrl: _getPhotoUrl(_existingPhotoUrls[index]),
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                    ),
+                  )
+                : Center(
+                    child: Icon(Icons.add, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), size: 40),
+                  ),
       ),
     );
   }
@@ -145,6 +287,22 @@ class _EditProfileState extends State<EditProfile> {
     final scheme = Theme.of(context).colorScheme;
     final width = MediaQuery.of(context).size.width;
     final isSmall = width < 400;
+
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: scheme.surface,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios, color: scheme.onSurface),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text('Edit Profile', style: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.bold)),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -156,6 +314,21 @@ class _EditProfileState extends State<EditProfile> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('Edit Profile', style: TextStyle(color: scheme.onSurface, fontWeight: FontWeight.bold)),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: TextButton(
+              onPressed: _isSaving ? null : _saveProfile,
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('SAVE', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
       ),
 
       body: SingleChildScrollView(
@@ -214,6 +387,139 @@ class _EditProfileState extends State<EditProfile> {
               value: _selectedInterests.join(', '),
               onTap: () => _showInterestsModal(),
             ),
+
+            // Primary Interest selector (appears on wishlist/home)
+            Container(
+              margin: const EdgeInsets.only(top: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Primary Interest', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _selectedInterests.contains(_occupation) ? _occupation : (_selectedInterests.isNotEmpty ? _selectedInterests.first : null),
+                    items: _selectedInterests.map((name) => DropdownMenuItem<String>(value: name, child: Text(name))).toList(),
+                    onChanged: (v) {
+                      if (v == null) return;
+                      setState(() {
+                        _occupation = v; // save chosen interest into occupation
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: _selectedInterests.isEmpty ? 'Select interests first' : 'Choose one to display',
+                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'This selected interest will be shown on wishlist/home.',
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5), fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+
+            // Bio input
+            Container(
+              margin: const EdgeInsets.only(top: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Bio', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    initialValue: _bio,
+                    maxLines: 4,
+                    onChanged: (v) => _bio = v,
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    decoration: InputDecoration(
+                      hintText: 'Tell something about you...',
+                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // City input
+            Container(
+              margin: const EdgeInsets.only(top: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('City', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    initialValue: _city,
+                    onChanged: (v) => _city = v,
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    decoration: InputDecoration(
+                      hintText: 'Your city...',
+                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Removed extra Interest text field; using Interests + Primary Interest selector only
 
             _SettingTile(
               title: 'Relationship goals',
@@ -299,10 +605,12 @@ class _SettingTile extends StatelessWidget {
 // Interests Modal
 class _InterestsModal extends StatefulWidget {
   final List<String> selectedInterests;
+  final List<Map<String, dynamic>> allInterestsFromApi;
   final Function(List<String>) onSave;
 
   const _InterestsModal({
     required this.selectedInterests,
+    required this.allInterestsFromApi,
     required this.onSave,
   });
 
@@ -314,12 +622,18 @@ class _InterestsModalState extends State<_InterestsModal> {
   final TextEditingController _searchController = TextEditingController();
   late List<String> _selected;
   
-  final List<String> _allInterests = [
-    'Photography', 'Tea', 'Travel', 'Music', 'Sports', 'Cooking',
-    'Reading', 'Gaming', 'Art', 'Dancing', 'Yoga', 'Movies',
-    'Hiking', 'Swimming', 'Cycling', 'Running', 'Fitness', 'Fashion',
-    'Technology', 'Writing', 'Pets', 'Wine', 'Coffee', 'Gardening',
-  ];
+  List<String> get _allInterests {
+    // Use interests from API if available, otherwise fallback to hardcoded
+    if (widget.allInterestsFromApi.isNotEmpty) {
+      return widget.allInterestsFromApi.map((i) => i['name'].toString()).toList();
+    }
+    return [
+      'Photography', 'Tea', 'Travel', 'Music', 'Sports', 'Cooking',
+      'Reading', 'Gaming', 'Art', 'Dancing', 'Yoga', 'Movies',
+      'Hiking', 'Swimming', 'Cycling', 'Running', 'Fitness', 'Fashion',
+      'Technology', 'Writing', 'Pets', 'Wine', 'Coffee', 'Gardening',
+    ];
+  }
 
   List<String> get _filteredInterests {
     if (_searchController.text.isEmpty) return _allInterests;

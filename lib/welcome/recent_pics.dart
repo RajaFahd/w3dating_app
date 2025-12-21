@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
+import '../services/api_service.dart';
+import '../providers/profile_provider.dart';
 
 class RecentPicsPage extends StatefulWidget {
   const RecentPicsPage({Key? key}) : super(key: key);
@@ -11,7 +14,9 @@ class RecentPicsPage extends StatefulWidget {
 
 class _RecentPicsPageState extends State<RecentPicsPage> {
   final ImagePicker _picker = ImagePicker();
+  final ApiService _apiService = ApiService();
   final List<File?> _images = List.filled(6, null);
+  bool _isLoading = false;
 
   Future<void> _pickImage(int index) async {
     try {
@@ -177,24 +182,31 @@ class _RecentPicsPageState extends State<RecentPicsPage> {
                       borderRadius: BorderRadius.circular(28),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/home');
-                  },
+                  onPressed: _isLoading ? null : _submitProfile,
                   child: Ink(
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(colors: [Color(0xFFFF6DA0), Color(0xFFFF3F80)]),
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))],
                     ),
-                    child: const Center(
-                      child: Text(
-                        'Next',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                    child: Center(
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Next',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -202,6 +214,58 @@ class _RecentPicsPageState extends State<RecentPicsPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _submitProfile() async {
+    // Get profile data from provider
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    
+    // Validate photos (at least 2 photos required)
+    final selectedPhotos = _images.where((img) => img != null).toList();
+    if (selectedPhotos.length < 2) {
+      _showError('Please upload at least 2 photos');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Step 1: Create Profile
+      final profileData = profileProvider.getProfileData();
+      final profileResponse = await _apiService.createProfile(profileData: profileData);
+
+      if (profileResponse['success'] == true) {
+        // Step 2: Upload Photos
+        final photos = selectedPhotos.cast<File>();
+        final photoResponse = await _apiService.uploadPhotos(photos: photos);
+
+        if (photoResponse['success'] == true) {
+          setState(() => _isLoading = false);
+          
+          // Clear provider data
+          profileProvider.clear();
+          
+          // Navigate to home
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        }
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showError(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

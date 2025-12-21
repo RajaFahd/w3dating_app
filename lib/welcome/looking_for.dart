@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
 import 'dart:async';
 
 class LookingForPage extends StatefulWidget {
@@ -144,7 +146,15 @@ class _LookingForPageState extends State<LookingForPage> {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/recent_pics');
+                    if (selectedOption != null) {
+                      Provider.of<ProfileProvider>(context, listen: false)
+                          .setLookingFor(selectedOption!);
+                      Navigator.pushNamed(context, '/recent_pics');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please select what you are looking for')),
+                      );
+                    }
                   },
                   child: const Text(
                     'Next',

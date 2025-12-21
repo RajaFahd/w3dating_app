@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:w3dating_app/template/bottom_navigation.dart';
 import 'package:w3dating_app/template/super_likes.dart';
 import 'package:w3dating_app/profile/setting_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../services/api_service.dart';
+import '../config/api_config.dart';
 
 class ProfileScreen extends StatefulWidget {
 	const ProfileScreen({Key? key}) : super(key: key);
@@ -11,13 +14,83 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-	final double _completion = 0.4; // 40%
+	final ApiService _apiService = ApiService();
+	bool _isLoading = true;
+	Map<String, dynamic>? _profileData;
+	double _completion = 0.0;
 	int _currentPage = 0;
 	final PageController _pageController = PageController();
 
 	@override
+	void initState() {
+		super.initState();
+		_loadProfile();
+	}
+
+	Future<void> _loadProfile() async {
+		setState(() => _isLoading = true);
+		
+		try {
+			final response = await _apiService.get('/profile/me');
+			print('Profile Response: $response'); // Debug
+			
+			if (response['success'] == true) {
+				final data = response['data'];
+				print('Profile Data: $data'); // Debug
+				print('Photos: ${data['photos']}'); // Debug
+				
+				setState(() {
+					_profileData = data;
+					_completion = (data['profile_completion'] ?? 0) / 100.0;
+					_isLoading = false;
+				});
+			}
+		} catch (e) {
+			print('Error loading profile: $e'); // Debug
+			setState(() => _isLoading = false);
+			if (mounted) {
+				ScaffoldMessenger.of(context).showSnackBar(
+					SnackBar(content: Text('Failed to load profile: $e')),
+				);
+			}
+		}
+	}
+
+	String _getPhotoUrl(String? photoUrl) {
+		if (photoUrl == null || photoUrl.isEmpty) return '';
+		if (photoUrl.startsWith('http')) return photoUrl;
+		final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+		return '$baseUrl$photoUrl';
+	}
+
+	@override
 	Widget build(BuildContext context) {
 		final theme = Theme.of(context);
+		
+		if (_isLoading) {
+			return Scaffold(
+				backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+				body: const Center(child: CircularProgressIndicator()),
+				bottomNavigationBar: AppBottomNavigation(currentIndex: 4),
+			);
+		}
+
+		final profile = _profileData?['profile'] ?? {};
+		final photos = (_profileData?['photos'] as List?) ?? [];
+		final firstName = profile['first_name'] ?? 'User';
+		final age = _profileData?['age'] ?? 0;
+		final city = profile['city'] ?? 'Unknown';
+		final completionPercent = (_completion * 100).toInt();
+		
+		// Get first photo
+		String? avatarUrl;
+		if (photos.isNotEmpty) {
+			avatarUrl = _getPhotoUrl(photos[0]['photo_url']);
+			print('Avatar URL: $avatarUrl'); // Debug
+		} else {
+			print('No photos found in profile data'); // Debug
+		}
+
 		return Scaffold(
 			backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 			appBar: AppBar(
@@ -118,10 +191,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         // Avatar utama
                         CircleAvatar(
                           radius: MediaQuery.of(context).size.width < 400 ? 60 : 75,
-                          backgroundImage: NetworkImage('https://i.pravatar.cc/200?img=47'),
+                          backgroundColor: Colors.grey.shade800,
+                          child: avatarUrl != null && avatarUrl.isNotEmpty
+                            ? ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: avatarUrl,
+                                  fit: BoxFit.cover,
+                                  width: (MediaQuery.of(context).size.width < 400 ? 60 : 75) * 2,
+                                  height: (MediaQuery.of(context).size.width < 400 ? 60 : 75) * 2,
+                                  placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
+                                  errorWidget: (context, url, error) {
+                                    print('Image Error: $error for URL: $url'); // Debug
+                                    return const Icon(Icons.person, size: 50, color: Colors.white54);
+                                  },
+                                ),
+                              )
+                            : const Icon(Icons.person, size: 50, color: Colors.white54),
                         ),
 
-                        // Persentase "40%" di bawah avatar menempel
+                        // Persentase di bawah avatar menempel
                         Positioned(
                           bottom: -12, // agar menempel ke bawah lingkaran
                           child: Container(
@@ -135,7 +223,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             child: Text(
-                              '40%',
+                              '$completionPercent%',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -147,7 +235,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
 										// Edit button
 										IconButton(
-											onPressed: () => Navigator.pushNamed(context, '/profile/edit'),
+											onPressed: () async {
+												final result = await Navigator.pushNamed(context, '/profile/edit');
+												if (result == true) {
+													// Reload profile if edit was successful
+													_loadProfile();
+												}
+											},
 											icon: CircleAvatar(
 												radius: MediaQuery.of(context).size.width < 400 ? 22 : 28,
 												backgroundColor: Colors.purple.shade800.withOpacity(0.3),
@@ -157,14 +251,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 									],
 								),
 								const SizedBox(height: 14),
-								const Text('Richard, 20', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-								const SizedBox(height: 6),
-								Row(
-									mainAxisSize: MainAxisSize.min,
-									children: const [
-										Icon(Icons.location_on, size: 16),
-										SizedBox(width: 6),
-										Text('Mentreal, Canada'),
+							Text('$firstName, $age', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+							const SizedBox(height: 6),
+							Row(
+								mainAxisSize: MainAxisSize.min,
+								children: [
+									const Icon(Icons.location_on, size: 16),
+									const SizedBox(width: 6),
+									Text(city),
 									],
 								),
 							],

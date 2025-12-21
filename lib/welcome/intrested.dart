@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/profile_provider.dart';
 
 class InterestedPage extends StatefulWidget {
   const InterestedPage({Key? key}) : super(key: key);
@@ -125,7 +127,15 @@ class _InterestedPageState extends State<InterestedPage> {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pushNamed(context, '/looking_for');
+                    if (selectedInterest != null) {
+                      Provider.of<ProfileProvider>(context, listen: false)
+                          .setInterestedIn([selectedInterest!]);
+                      Navigator.pushNamed(context, '/looking_for');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please select who you are interested in')),
+                      );
+                    }
                   },
                   child: const Text(
                     'Next',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:w3dating_app/welcome/onboarding_page.dart';
 import 'package:w3dating_app/welcome/login_page.dart';
 import 'package:w3dating_app/welcome/otp_page.dart';
@@ -22,8 +23,18 @@ import 'package:w3dating_app/profile/filter.dart';
 import 'package:w3dating_app/profile/setting_page.dart';
 import 'package:w3dating_app/profile/subscription_page.dart';
 import 'package:w3dating_app/theme/app_theme.dart';
+import 'package:w3dating_app/providers/profile_provider.dart';
+import 'package:w3dating_app/providers/swipe_provider.dart';
+import 'package:w3dating_app/providers/chat_provider.dart';
+import 'package:w3dating_app/services/api_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load token from storage
+  final apiService = ApiService();
+  await apiService.loadToken();
+  
   runApp(const W3DatingApp());
 }
 
@@ -37,7 +48,7 @@ class W3DatingApp extends StatefulWidget {
 }
 
 class _W3DatingAppState extends State<W3DatingApp> {
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode _themeMode = ThemeMode.dark;
 
   void setThemeMode(ThemeMode mode) {
     setState(() => _themeMode = mode);
@@ -45,13 +56,19 @@ class _W3DatingAppState extends State<W3DatingApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'W3 Dating',
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
-      themeMode: _themeMode,
-      initialRoute: '/match_screen',
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => SwipeProvider()),
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'W3 Dating',
+        theme: AppTheme.light(),
+        darkTheme: AppTheme.dark(),
+        themeMode: _themeMode,
+        initialRoute: '/onboarding',
       routes: {
         '/match_screen': (ctx) => const MatchScreenPage(),
         '/onboarding': (ctx) => const OnboardingPage(),
@@ -67,7 +84,7 @@ class _W3DatingAppState extends State<W3DatingApp> {
         '/home': (ctx) => const HomeScreen(),
         '/explore': (ctx) => const ExploreScreen(),
         '/chat_list': (ctx) => const ChatListPage(),
-        '/chat_screen': (ctx) => const ChatScreen(),
+        '/chat_screen': (ctx) => const ChatScreenApi(),
         '/wishlist': (ctx) => const WishlistScreen(),
         '/wishlist_profile': (ctx) => const ProfileDetail(),
         '/profile': (ctx) => const ProfileScreen(),
@@ -76,6 +93,7 @@ class _W3DatingAppState extends State<W3DatingApp> {
         '/profile/setting': (ctx) => const SettingPage(),
         '/profile/subscription': (ctx) => const SubscriptionPage(),
       },
+      ),
     );
   }
 }
