@@ -14,18 +14,16 @@ class User extends Authenticatable
     protected $fillable = [
         'phone_number',
         'country_code',
-        'otp_code',
-        'otp_verified_at',
+        'password',
         'is_active',
         'last_active_at',
     ];
 
     protected $hidden = [
-        'otp_code',
+        'password',
     ];
 
     protected $casts = [
-        'otp_verified_at' => 'datetime',
         'last_active_at' => 'datetime',
         'is_active' => 'boolean',
     ];
@@ -79,6 +77,17 @@ class User extends Authenticatable
     public function receivedMessages()
     {
         return $this->hasMany(Message::class, 'receiver_id');
+    }
+
+    public function events()
+    {
+        return $this->hasMany(Event::class, 'user_id');
+    }
+
+    public function eventParticipations()
+    {
+        return $this->belongsToMany(Event::class, 'event_participants', 'user_id', 'event_id')
+            ->withTimestamps();
     }
 
     public function hasActiveSubscription()

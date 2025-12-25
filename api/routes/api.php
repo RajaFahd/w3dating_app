@@ -9,10 +9,11 @@ use App\Http\Controllers\Api\MatchController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\FilterController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Api\EventController;
 
 // Public routes
-Route::post('/auth/send-otp', [AuthController::class, 'sendOTP']);
-Route::post('/auth/verify-otp', [AuthController::class, 'verifyOTP']);
+Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/login', [AuthController::class, 'login']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -58,4 +59,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/subscription/subscribe', [SubscriptionController::class, 'subscribe']);
     Route::get('/subscription/my', [SubscriptionController::class, 'getMySubscription']);
     Route::post('/subscription/cancel', [SubscriptionController::class, 'cancelSubscription']);
+
+    // Events
+    Route::get('/events', [EventController::class, 'index']);
+    Route::post('/events', [EventController::class, 'store']);
+    Route::put('/events/{eventId}', [EventController::class, 'update']);
+    Route::delete('/events/{eventId}', [EventController::class, 'destroy']);
+    Route::post('/events/{eventId}/join', [EventController::class, 'join']);
+    Route::post('/events/{eventId}/leave', [EventController::class, 'leave']);
 });

@@ -11,56 +11,32 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    public function sendOTP(Request $request)
+    public function register(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'phone_number' => 'required|string|max:20',
             'country_code' => 'required|string|max:5',
+            'password' => 'required|string|min:6|confirmed',
         ]);
 
-        $otpCode = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        // Check if user with this phone_number + country_code combination already exists
+        $exists = User::where('phone_number', $validated['phone_number'])
+            ->where('country_code', $validated['country_code'])
+            ->exists();
 
-        $user = User::updateOrCreate(
-            [
-                'phone_number' => $request->phone_number,
-                'country_code' => $request->country_code,
-            ],
-            [
-                'otp_code' => $otpCode,
-            ]
-        );
-
-        // TODO: Implement actual SMS sending via Twilio, Nexmo, etc.
-        // For now, return OTP in response (ONLY FOR DEVELOPMENT)
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'OTP sent successfully',
-            'otp' => $otpCode, // Remove in production
-        ]);
-    }
-
-    public function verifyOTP(Request $request)
-    {
-        $request->validate([
-            'phone_number' => 'required|string|max:20',
-            'otp_code' => 'required|string|size:6',
-        ]);
-
-        $user = User::where('phone_number', $request->phone_number)
-            ->where('otp_code', $request->otp_code)
-            ->first();
-
-        if (!$user) {
+        if ($exists) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid OTP',
-            ], 400);
+                'message' => 'Phone number already registered',
+                'errors' => ['phone_number' => ['This phone number is already registered for this country']],
+            ], 422);
         }
 
-        $user->update([
-            'otp_verified_at' => now(),
-            'otp_code' => null,
+        $user = User::create([
+            'phone_number' => $validated['phone_number'],
+            'country_code' => $validated['country_code'],
+            'password' => Hash::make($validated['password']),
+            'is_active' => true,
             'last_active_at' => now(),
         ]);
 
@@ -68,7 +44,41 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'OTP verified successfully',
+            'message' => 'Registration successful',
+            'token' => $token,
+            'user' => $user,
+            'has_profile' => $user->profile !== null,
+        ], 201);
+    }
+
+    public function login(Request $request)
+    {
+        $validated = $request->validate([
+            'phone_number' => 'required|string|max:20',
+            'country_code' => 'required|string|max:5',
+            'password' => 'required|string',
+        ]);
+
+        $user = User::where('phone_number', $validated['phone_number'])
+            ->where('country_code', $validated['country_code'])
+            ->first();
+
+        if (!$user || !Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid phone number, country code, or password',
+            ], 401);
+        }
+
+        $user->update([
+            'last_active_at' => now(),
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
             'token' => $token,
             'user' => $user,
             'has_profile' => $user->profile !== null,

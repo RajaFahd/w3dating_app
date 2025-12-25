@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('interested_in')->nullable();
             $table->string('looking_for')->nullable();
             $table->text('bio')->nullable();
-            $table->string('occupation')->nullable();
+            $table->string('interest')->nullable();
             $table->string('language', 50)->default('English');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();

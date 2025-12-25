@@ -238,11 +238,13 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($users as $userData) {
-            // Create user
+            // Create user with password (default password for testing)
             $user = User::create([
                 'phone_number' => $userData['phone_number'],
                 'country_code' => $userData['country_code'],
-                'otp_verified_at' => now(),
+                'password' => \Illuminate\Support\Facades\Hash::make('password123'), // Default password for testing
+                'is_active' => true,
+                'last_active_at' => now(),
             ]);
 
             // Create profile

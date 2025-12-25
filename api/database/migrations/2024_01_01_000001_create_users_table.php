@@ -10,10 +10,11 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('phone_number', 20)->unique();
-            $table->string('country_code', 5)->default('+61');
-            $table->string('otp_code', 6)->nullable();
-            $table->timestamp('otp_verified_at')->nullable();
+            $table->string('phone_number', 20);
+            $table->string('country_code', 5)->default('+62');
+            $table->string('password');
+            $table->string('password_confirm')->nullable();
+            $table->unique(['phone_number', 'country_code']);
             $table->boolean('is_active')->default(true);
             $table->timestamp('last_active_at')->nullable();
             $table->timestamps();
