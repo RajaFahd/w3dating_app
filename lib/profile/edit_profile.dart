@@ -47,7 +47,7 @@ class _EditProfileState extends State<EditProfile> {
         });
       }
     } catch (e) {
-      print('Failed to load interests: $e');
+      // Silently fail - interests loading is optional
     }
   }
 

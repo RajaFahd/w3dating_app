@@ -4,7 +4,7 @@ import '../config/api_config.dart';
 import '../services/api_service.dart';
 
 class ProfileDetail extends StatelessWidget {
-  const ProfileDetail({Key? key}) : super(key: key);
+  const ProfileDetail({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class ProfileDetail extends StatelessWidget {
     final language = (args['language'] ?? '').toString();
     final interests = (args['interest'] as List?)?.map((e) => e.toString()).toList() ?? <String>[];
 
-    String _absolutePhotoUrl(String? photoUrl) {
+    String absolutePhotoUrl(String? photoUrl) {
       if (photoUrl == null || photoUrl.isEmpty) return '';
       if (photoUrl.startsWith('http')) return photoUrl;
       final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
@@ -45,7 +45,7 @@ class ProfileDetail extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                     child: Stack(
                       children: [
-                        if (_absolutePhotoUrl(image).isEmpty)
+                        if (absolutePhotoUrl(image).isEmpty)
                           Container(
                             width: double.infinity,
                             height: 420,
@@ -56,7 +56,7 @@ class ProfileDetail extends StatelessWidget {
                           )
                         else
                           CachedNetworkImage(
-                            imageUrl: _absolutePhotoUrl(image),
+                            imageUrl: absolutePhotoUrl(image),
                             width: double.infinity,
                             height: 420,
                             fit: BoxFit.cover,
@@ -195,7 +195,7 @@ class ProfileDetail extends StatelessWidget {
                         arguments: {
                           'user_id': args['user_id'],
                           'name': name,
-                          'avatar': _absolutePhotoUrl(image),
+                          'avatar': absolutePhotoUrl(image),
                           // is_online optional; omit if not available
                         },
                       );
@@ -231,7 +231,7 @@ class ProfileDetail extends StatelessWidget {
 
 class _LangChip extends StatelessWidget {
   final String label;
-  const _LangChip(this.label, {Key? key}) : super(key: key);
+  const _LangChip(this.label);
 
   @override
   Widget build(BuildContext context) {

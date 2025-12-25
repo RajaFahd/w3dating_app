@@ -4,7 +4,7 @@ import '../services/api_service.dart';
 import 'dart:async';
 
 class ChatScreenApi extends StatefulWidget {
-  const ChatScreenApi({Key? key}) : super(key: key);
+  const ChatScreenApi({super.key});
 
   @override
   State<ChatScreenApi> createState() => _ChatScreenApiState();
@@ -85,7 +85,6 @@ class _ChatScreenApiState extends State<ChatScreenApi> {
       if (!silent && mounted) {
         setState(() => _isLoading = false);
       }
-      print('Error loading messages: $e');
     }
   }
 
@@ -107,7 +106,7 @@ class _ChatScreenApiState extends State<ChatScreenApi> {
         await _loadMessages(silent: true);
       }
     } catch (e) {
-      print('Error sending message: $e');
+      // Message send failed silently - error handling via UI state
     } finally {
       if (mounted) setState(() => _isSending = false);
     }

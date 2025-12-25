@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -10,10 +9,9 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _phoneController = TextEditingController();
-  final ApiService _apiService = ApiService();
   String _selectedCountryCode = '+1';
   String _selectedCountryFlag = 'us';
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   // Comprehensive list of countries with their codes and flags
   final Map<String, Map<String, String>> _countries = {
@@ -349,7 +347,7 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  onPressed: _isLoading ? null : _sendOTP,
+                  onPressed: _isLoading ? null : _goToPassword,
                   child: _isLoading
                       ? const SizedBox(
                           height: 24,
@@ -376,47 +374,22 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> _sendOTP() async {
-    // Normalize phone number (digits only)
+  Future<void> _goToPassword() async {
     final phoneNumber = _phoneController.text.replaceAll(RegExp(r"[^0-9]"), '').trim();
-
     if (phoneNumber.isEmpty) {
       _showError('Please enter your phone number');
       return;
     }
-
-    setState(() => _isLoading = true);
-
-    try {
-      final response = await _apiService.sendOTP(
-        phoneNumber: phoneNumber,
-        countryCode: _selectedCountryCode,
-      );
-
-      setState(() => _isLoading = false);
-
-      // Treat presence of 'success' or 'otp' as success; otherwise show message
-      final bool isSuccess = (response['success'] == true) || response.containsKey('otp');
-      if (isSuccess) {
-        if (mounted) {
-          Navigator.pushNamed(
-            context,
-            '/otp',
-            arguments: {
-              'phone_number': phoneNumber,
-              'country_code': _selectedCountryCode,
-              'otp': response['otp'], // For development only
-            },
-          );
-        }
-      } else {
-        final message = (response['message'] ?? 'Failed to send OTP').toString();
-        _showError(message);
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showError(e.toString().replaceAll('Exception: ', ''));
-    }
+    if (!mounted) return;
+    Navigator.pushNamed(
+      context,
+      '/password',
+      arguments: {
+        'phone_number': phoneNumber,
+        'country_code': _selectedCountryCode,
+        'register': false,
+      },
+    );
   }
 
   void _showCountryPicker(BuildContext context) {

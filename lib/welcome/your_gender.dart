@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 
 class YourGenderPage extends StatefulWidget {
-	const YourGenderPage({Key? key}) : super(key: key);
+	const YourGenderPage({super.key});
 
 	@override
 	State<YourGenderPage> createState() => _YourGenderPageState();
@@ -64,17 +64,8 @@ class _YourGenderPageState extends State<YourGenderPage> {
 															child: Row(
 																children: [
 																	const SizedBox(width: 16),
-																	Expanded(
-																		child: Text(
-																			opt,
-																			style: TextStyle(
-																				color: selected == opt ? Colors.white : Colors.white.withOpacity(0.85),
-																				fontSize: 16,
-																			),
-																		),
-																	),
 																	Padding(
-																		padding: const EdgeInsets.only(right: 16.0),
+																		padding: const EdgeInsets.only(right: 12.0),
 																		child: Container(
 																			width: 24,
 																			height: 24,
@@ -94,6 +85,15 @@ class _YourGenderPageState extends State<YourGenderPage> {
 																							),
 																						)
 																					: null,
+																		),
+																	),
+																	Expanded(
+																		child: Text(
+																			opt,
+																			style: TextStyle(
+																				color: selected == opt ? Colors.white : Colors.white.withOpacity(0.85),
+																				fontSize: 16,
+																			),
 																		),
 																	),
 																],

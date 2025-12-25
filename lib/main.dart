@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:w3dating_app/welcome/onboarding_page.dart';
 import 'package:w3dating_app/welcome/login_page.dart';
-import 'package:w3dating_app/welcome/otp_page.dart';
+import 'package:w3dating_app/welcome/password_page.dart';
 import 'package:w3dating_app/welcome/first_name.dart';
 import 'package:w3dating_app/welcome/enter_birth_date.dart';
 import 'package:w3dating_app/welcome/your_gender.dart';
@@ -39,9 +39,9 @@ void main() async {
 }
 
 class W3DatingApp extends StatefulWidget {
-  const W3DatingApp({Key? key}) : super(key: key);
+  const W3DatingApp({super.key});
 
-  static _W3DatingAppState of(BuildContext context) => context.findAncestorStateOfType<_W3DatingAppState>()!;
+  static _W3DatingAppState? of(BuildContext context) => context.findAncestorStateOfType<_W3DatingAppState>();
 
   @override
   State<W3DatingApp> createState() => _W3DatingAppState();
@@ -73,7 +73,7 @@ class _W3DatingAppState extends State<W3DatingApp> {
         '/match_screen': (ctx) => const MatchScreenPage(),
         '/onboarding': (ctx) => const OnboardingPage(),
         '/login': (ctx) => const LoginPage(),
-        '/otp': (ctx) => const OtpPage(),
+        '/password': (ctx) => const PasswordPage(),
         '/first_name': (ctx) => const FirstNamePage(),
         '/birth_date': (ctx) => const EnterBirthDate(),
         '/your_gender': (ctx) => const YourGenderPage(),

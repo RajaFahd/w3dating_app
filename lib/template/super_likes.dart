@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class SuperLikesSheet extends StatefulWidget {
-  const SuperLikesSheet({Key? key}) : super(key: key);
+  const SuperLikesSheet({super.key});
 
   @override
   State<SuperLikesSheet> createState() => _SuperLikesSheetState();

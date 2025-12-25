@@ -5,7 +5,7 @@ import '../services/api_service.dart';
 import '../config/api_config.dart';
 
 class ChatListPage extends StatefulWidget {
-  const ChatListPage({Key? key}) : super(key: key);
+  const ChatListPage({super.key});
 
   @override
   State<ChatListPage> createState() => _ChatListPageState();
@@ -41,25 +41,19 @@ class _ChatListPageState extends State<ChatListPage> with AutomaticKeepAliveClie
     setState(() => _isLoading = true);
     
     try {
-      print('DEBUG: Fetching /chat/list...');
       
       final response = await _apiService.get('/chat/list');
-      print('DEBUG: Response received: $response');
       
       if (response['success'] == true) {
-        print('DEBUG: Response success=true, data length: ${response['data'].length}');
         setState(() {
           _chatList = List<Map<String, dynamic>>.from(response['data']);
           _isLoading = false;
-          print('DEBUG: Chat list updated, now has ${_chatList.length} items');
         });
       } else {
-        print('DEBUG: Response success is false or null - ${response['message'] ?? response}');
         setState(() => _isLoading = false);
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      print('ERROR loading chat list: $e');
     }
   }
 
@@ -72,7 +66,7 @@ class _ChatListPageState extends State<ChatListPage> with AutomaticKeepAliveClie
         });
       }
     } catch (e) {
-      print('Error loading matches: $e');
+      // Silently fail - matches are optional
     }
   }
 

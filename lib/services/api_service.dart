@@ -56,13 +56,11 @@ class ApiService {
   }) async {
     try {
       final url = Uri.parse('$baseUrl$endpoint');
-      print('DEBUG ApiService.get: Calling $url with token: ${_token != null ? _token!.substring(0, 20) + '...' : 'NO TOKEN'}');
       final response = await http.get(
         url,
         headers: _getHeaders(requiresAuth: requiresAuth),
       ).timeout(ApiConfig.timeout);
 
-      print('DEBUG ApiService.get: Response status ${response.statusCode}');
       return _handleResponse(response);
     } on SocketException {
       throw Exception('No internet connection');
@@ -225,35 +223,45 @@ class ApiService {
   }
 
   // ==================== AUTH ENDPOINTS ====================
-
-  Future<Map<String, dynamic>> sendOTP({
+  Future<Map<String, dynamic>> register({
     required String phoneNumber,
     required String countryCode,
+    required String password,
+    required String passwordConfirmation,
   }) async {
-    return await post(
-      '/auth/send-otp',
+    final response = await post(
+      '/auth/register',
       body: {
         'phone_number': phoneNumber,
         'country_code': countryCode,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
       },
       requiresAuth: false,
     );
+
+    if (response['token'] != null) {
+      await saveToken(response['token']);
+    }
+
+    return response;
   }
 
-  Future<Map<String, dynamic>> verifyOTP({
+  Future<Map<String, dynamic>> login({
     required String phoneNumber,
-    required String otpCode,
+    required String countryCode,
+    required String password,
   }) async {
     final response = await post(
-      '/auth/verify-otp',
+      '/auth/login',
       body: {
         'phone_number': phoneNumber,
-        'otp_code': otpCode,
+        'country_code': countryCode,
+        'password': password,
       },
       requiresAuth: false,
     );
 
-    // Save token
     if (response['token'] != null) {
       await saveToken(response['token']);
     }
@@ -405,5 +413,62 @@ class ApiService {
 
   Future<Map<String, dynamic>> cancelSubscription() async {
     return await post('/subscriptions/cancel', body: {});
+  }
+
+  // ==================== EVENTS ENDPOINTS ====================
+
+  Future<Map<String, dynamic>> getEvents() async {
+    return await get('/events');
+  }
+
+  Future<Map<String, dynamic>> createEvent({
+    required String title,
+    required String description,
+    required String location,
+    required String eventDate, // Format: 'Y-m-d H:i'
+    String? image,
+  }) async {
+    return await post(
+      '/events',
+      body: {
+        'title': title,
+        'description': description,
+        'location': location,
+        'event_date': eventDate,
+        if (image != null) 'image': image,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> updateEvent({
+    required int eventId,
+    required String title,
+    required String description,
+    required String location,
+    required String eventDate,
+    String? image,
+  }) async {
+    return await put(
+      '/events/$eventId',
+      body: {
+        'title': title,
+        'description': description,
+        'location': location,
+        'event_date': eventDate,
+        if (image != null) 'image': image,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> deleteEvent(int eventId) async {
+    return await delete('/events/$eventId');
+  }
+
+  Future<Map<String, dynamic>> joinEvent(int eventId) async {
+    return await post('/events/$eventId/join', body: {});
+  }
+
+  Future<Map<String, dynamic>> leaveEvent(int eventId) async {
+    return await post('/events/$eventId/leave', body: {});
   }
 }

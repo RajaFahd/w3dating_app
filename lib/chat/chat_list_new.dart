@@ -6,7 +6,7 @@ import '../services/api_service.dart';
 import '../providers/chat_provider.dart';
 
 class ChatListPageNew extends StatefulWidget {
-  const ChatListPageNew({Key? key}) : super(key: key);
+  const ChatListPageNew({super.key});
 
   @override
   State<ChatListPageNew> createState() => _ChatListPageNewState();

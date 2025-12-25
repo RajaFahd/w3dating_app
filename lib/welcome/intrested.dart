@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 
 class InterestedPage extends StatefulWidget {
-  const InterestedPage({Key? key}) : super(key: key);
+  const InterestedPage({super.key});
 
   @override
   State<InterestedPage> createState() => _InterestedPageState();

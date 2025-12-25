@@ -6,7 +6,7 @@ import '../services/api_service.dart';
 import '../providers/profile_provider.dart';
 
 class RecentPicsPage extends StatefulWidget {
-  const RecentPicsPage({Key? key}) : super(key: key);
+  const RecentPicsPage({super.key});
 
   @override
   State<RecentPicsPage> createState() => _RecentPicsPageState();

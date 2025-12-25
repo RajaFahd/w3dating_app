@@ -1,12 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:w3dating_app/main.dart';
+import '../services/api_service.dart';
 
-class SideBar extends StatelessWidget {
-  const SideBar({Key? key}) : super(key: key);
+class SideBar extends StatefulWidget {
+  const SideBar({super.key});
+
+  @override
+  State<SideBar> createState() => _SideBarState();
+}
+
+class _SideBarState extends State<SideBar> {
+  final ApiService _apiService = ApiService();
+  Map<String, dynamic>? _user;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final response = await _apiService.getMe();
+      if (response['success'] == true && response['data'] != null) {
+        setState(() {
+          _user = response['data'];
+          _isLoading = false;
+        });
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    
+    if (_isLoading) {
+      return Drawer(
+        backgroundColor: scheme.surface,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final profile = _user?['profile'] as Map<String, dynamic>?;
+    final photos = _user?['photos'] as List<dynamic>?;
+    final firstName = profile?['first_name'] ?? 'User';
+    final phoneNumber = _user?['phone_number'] ?? '';
+    final countryCode = _user?['country_code'] ?? '';
+    final displayPhone = '$countryCode $phoneNumber';
+    
+    // Get primary photo (is_primary = 1) or first photo
+    String? profileImageUrl;
+    if (photos != null && photos.isNotEmpty) {
+      try {
+        final primaryPhoto = photos.firstWhere(
+          (p) => (p as Map<String, dynamic>)['is_primary'] == 1,
+          orElse: () => photos.first,
+        );
+        final photoPath = (primaryPhoto as Map<String, dynamic>)['photo_url'];
+        if (photoPath != null) {
+          // Build full URL - remove /api from base URL for storage files
+          final baseUrlWithoutApi = ApiService.baseUrl.replaceAll('/api', '');
+          profileImageUrl = '$baseUrlWithoutApi$photoPath';
+        }
+      } catch (e) {
+        profileImageUrl = null;
+      }
+    }
+    
     return Drawer(
       backgroundColor: scheme.surface,
       child: SafeArea(
@@ -21,48 +87,55 @@ class SideBar extends StatelessWidget {
                   children: [
                     // Profile image
                     Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: const DecorationImage(
-                        image: NetworkImage('https://i.pravatar.cc/150?img=1'),
-                        fit: BoxFit.cover,
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: scheme.primary, width: 2),
                       ),
-                      border: Border.all(color: scheme.primary, width: 2),
+                      child: ClipOval(
+                        child: profileImageUrl != null 
+                          ? Image.network(
+                              profileImageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(Icons.person, color: scheme.onSurface, size: 32);
+                              },
+                            )
+                          : Icon(Icons.person, color: scheme.onSurface, size: 32),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Name and email
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'John Doe',
-                          style: TextStyle(
-                            color: scheme.onSurface,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                    const SizedBox(width: 12),
+                    // Name and phone
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            firstName,
+                            style: TextStyle(
+                              color: scheme.onSurface,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'example@gmail.com',
-                          style: TextStyle(
-                            color: scheme.primary,
-                            fontSize: 14,
+                          const SizedBox(height: 2),
+                          Text(
+                            displayPhone,
+                            style: TextStyle(
+                              color: scheme.primary,
+                              fontSize: 14,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  // Menu button
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.menu, color: scheme.onSurface),
-                  ),
-                ],
+                    // Menu button
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.menu, color: scheme.onSurface),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -77,21 +150,6 @@ class SideBar extends StatelessWidget {
               icon: Icons.favorite_border,
               label: 'W3Dating Package',
               onTap: () => Navigator.pushNamed(context, '/profile/subscription'),
-            ),
-            _MenuItem(
-              icon: Icons.list_alt,
-              label: 'Package List',
-              onTap: () {},
-            ),
-            _MenuItem(
-              icon: Icons.waving_hand_outlined,
-              label: 'Welcome',
-              onTap: () {},
-            ),
-            _MenuItem(
-              icon: Icons.grid_view,
-              label: 'Components',
-              onTap: () {},
             ),
             _MenuItem(
               icon: Icons.settings_outlined,
@@ -129,10 +187,10 @@ class SideBar extends StatelessWidget {
                     onChanged: (v) {
                       try {
                         final app = W3DatingApp.of(context);
-                        app.setThemeMode(v ? ThemeMode.dark : ThemeMode.light);
+                        app?.setThemeMode(v ? ThemeMode.dark : ThemeMode.light);
                       } catch (_) {}
                     },
-                    activeColor: scheme.primary,
+                    activeThumbColor: scheme.primary,
                   ),
                 ],
               ),

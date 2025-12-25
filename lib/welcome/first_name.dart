@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 
 class FirstNamePage extends StatefulWidget {
-  const FirstNamePage({Key? key}) : super(key: key);
+  const FirstNamePage({super.key});
 
   @override
   State<FirstNamePage> createState() => _FirstNamePageState();

@@ -8,12 +8,12 @@ class MatchScreenPage extends StatefulWidget {
   final int matchUserId;
 
   const MatchScreenPage({
-    Key? key,
+    super.key,
     this.matchName = 'Marianne',
     this.userImageUrl = 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400',
     this.matchImageUrl = 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400',
     this.matchUserId = 1,
-  }) : super(key: key);
+  });
 
   @override
   State<MatchScreenPage> createState() => _MatchScreenPageState();

@@ -5,7 +5,7 @@ import '../services/api_service.dart';
 import '../config/api_config.dart';
 
 class ChatListPage extends StatefulWidget {
-  const ChatListPage({Key? key}) : super(key: key);
+  const ChatListPage({super.key});
 
   @override
   State<ChatListPage> createState() => _ChatListPageState();
@@ -37,7 +37,6 @@ class _ChatListPageState extends State<ChatListPage> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      print('Error loading chat list: $e');
     }
   }
 
@@ -50,7 +49,7 @@ class _ChatListPageState extends State<ChatListPage> {
         });
       }
     } catch (e) {
-      print('Error loading matches: $e');
+      // Silently fail - matches are optional
     }
   }
 

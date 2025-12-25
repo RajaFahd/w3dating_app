@@ -1,7 +1,8 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SubscriptionPage extends StatefulWidget {
-  const SubscriptionPage({Key? key}) : super(key: key);
+  const SubscriptionPage({super.key});
 
   @override
   State<SubscriptionPage> createState() => _SubscriptionPageState();
@@ -33,7 +34,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text('My Subscription', style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 18, fontWeight: FontWeight.w600)),
+                  Text('My Subscription', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -100,7 +101,25 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                     elevation: 6,
                   ),
-                  onPressed: () {},
+                  onPressed: () async {
+                    final packageName = _currentPage == 0 ? 'PLUS' : (_currentPage == 1 ? 'GOLD' : 'PLATINUM');
+                    final price = _getPriceForCurrentPage();
+                    final message = 'Halo, saya tertarik untuk berlangganan paket $packageName seharga $price';
+                    final url = Uri.parse('https://api.whatsapp.com/send?phone=6282262266094&text=${Uri.encodeComponent(message)}');
+                    
+                    try {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Tidak dapat membuka WhatsApp. Pastikan aplikasi WhatsApp terinstall.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
                   child: Ink(
                     decoration: BoxDecoration(
                       gradient: _getGradientForCurrentPage(),
@@ -222,11 +241,11 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
   String _getPriceForCurrentPage() {
     if (_currentPage == 0) {
-      return '₹450';
+      return 'Rp300K';
     } else if (_currentPage == 1) {
-      return '₹650';
+      return 'Rp550K';
     } else {
-      return '₹999';
+      return 'Rp800K';
     }
   }
 

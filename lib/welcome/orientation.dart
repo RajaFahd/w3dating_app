@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 
 class OrientationPage extends StatefulWidget {
-  const OrientationPage({Key? key}) : super(key: key);
+  const OrientationPage({super.key});
 
   @override
   State<OrientationPage> createState() => _OrientationPageState();
@@ -86,8 +86,8 @@ class _OrientationPageState extends State<OrientationPage> {
                                 SizedBox(width: MediaQuery.of(context).size.width < 400 ? 12 : 16),
                                 Icon(
                                   selectedOrientation == orientation
-                                      ? Icons.check_box_rounded
-                                      : Icons.check_box_outline_blank_rounded,
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_unchecked,
                                   color: selectedOrientation == orientation
                                       ? const Color(0xFFFF3F80)
                                       : Colors.white.withOpacity(0.6),

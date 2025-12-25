@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ProfileFilterPage extends StatefulWidget {
-	const ProfileFilterPage({Key? key}) : super(key: key);
+	const ProfileFilterPage({super.key});
 
 	@override
 	State<ProfileFilterPage> createState() => _ProfileFilterPageState();
@@ -37,7 +37,7 @@ class _ProfileFilterPageState extends State<ProfileFilterPage> {
 										),
 									),
 									const SizedBox(width: 8),
-									Text('Date Filter', style: TextStyle(color: Theme.of(context).colorScheme.onBackground, fontSize: 18, fontWeight: FontWeight.w600)),
+									Text('Date Filter', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.w600)),
 								],
 							),
 						),

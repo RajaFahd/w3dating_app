@@ -4,7 +4,7 @@ import '../providers/profile_provider.dart';
 import 'dart:async';
 
 class LookingForPage extends StatefulWidget {
-  const LookingForPage({Key? key}) : super(key: key);
+  const LookingForPage({super.key});
 
   @override
   State<LookingForPage> createState() => _LookingForPageState();

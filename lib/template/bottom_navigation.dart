@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppBottomNavigation extends StatelessWidget {
   final int currentIndex;
 
-  const AppBottomNavigation({Key? key, this.currentIndex = 0}) : super(key: key);
+  const AppBottomNavigation({super.key, this.currentIndex = 0});
 
   void _handleNavigation(BuildContext context, int index) {
     // Jangan navigate jika sudah di halaman yang sama

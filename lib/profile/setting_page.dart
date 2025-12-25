@@ -1,16 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:w3dating_app/main.dart';
+import '../services/api_service.dart';
 
 class SettingPage extends StatefulWidget {
-  const SettingPage({Key? key}) : super(key: key);
+  const SettingPage({super.key});
 
   @override
   State<SettingPage> createState() => _SettingPageState();
 }
 
 class _SettingPageState extends State<SettingPage> {
+  final ApiService _apiService = ApiService();
   double maxDistance = 40;
   RangeValues ageRange = const RangeValues(18, 30);
+  String? _phoneNumber;
+  String? _location;
+  String? _email;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final response = await _apiService.getMe();
+      
+      if (response['success'] == true) {
+        final user = response['data'] as Map<String, dynamic>?;
+        
+        if (user != null) {
+          final profile = user['profile'] as Map<String, dynamic>?;
+          
+          setState(() {
+            _phoneNumber = '${user['country_code'] ?? '+62'}${user['phone_number'] ?? ''}';
+            _email = user['email'] ?? 'Not set';
+            _location = profile?['city'] ?? 'Not set';
+            _isLoading = false;
+          });
+        } else {
+          setState(() => _isLoading = false);
+        }
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +80,7 @@ class _SettingPageState extends State<SettingPage> {
                   Text(
                     'Settings',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onBackground,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -67,16 +106,20 @@ class _SettingPageState extends State<SettingPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildSettingItem(
-                      icon: Icons.phone,
-                      title: 'Phone Number',
-                      value: '+123 4567 890',
-                    ),
-                    _buildSettingItem(
-                      icon: Icons.email_outlined,
-                      title: 'Email Address',
-                      value: 'yourname@gmail.com',
-                    ),
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _buildSettingItem(
+                            icon: Icons.phone,
+                            title: 'Phone Number',
+                            value: _phoneNumber ?? 'Not set',
+                          ),
+                    _isLoading
+                        ? const SizedBox()
+                        : _buildSettingItem(
+                            icon: Icons.email_outlined,
+                            title: 'Email Address',
+                            value: _email ?? 'Not set',
+                          ),
                     
                     const SizedBox(height: 24),
                     // Discovery Setting
@@ -89,11 +132,13 @@ class _SettingPageState extends State<SettingPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildSettingItem(
-                      icon: Icons.location_on_outlined,
-                      title: 'Location',
-                      value: '2300 Traverwood Dr. Ann Arbor, MI',
-                    ),
+                    _isLoading
+                        ? const SizedBox()
+                        : _buildSettingItem(
+                            icon: Icons.location_on_outlined,
+                            title: 'Location',
+                            value: _location ?? 'Not set',
+                          ),
                     
                     const SizedBox(height: 24),
                     // Other
@@ -167,7 +212,7 @@ class _SettingPageState extends State<SettingPage> {
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -176,17 +221,46 @@ class _SettingPageState extends State<SettingPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                                Text(
-                                  'Age Range',
-                                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
-                                ),
+                              Text(
+                                'Age Range',
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                              ),
                               Text(
                                 '${ageRange.start.toInt()} - ${ageRange.end.toInt()}',
                                 style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              activeTrackColor: const Color(0xFFFF3F80),
+                              inactiveTrackColor: Colors.white24,
+                              thumbColor: const Color(0xFFFF3F80),
+                              overlayColor: const Color(0x33FF3F80),
+                              trackHeight: 4,
+                              rangeThumbShape: const RoundRangeSliderThumbShape(
+                                enabledThumbRadius: 10,
+                              ),
+                            ),
+                            child: RangeSlider(
+                              values: ageRange,
+                              min: 18,
+                              max: 70,
+                              onChanged: (values) {
+                                setState(() {
+                                  ageRange = values;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     // Theme mode toggle
                     Container(
-                      margin: const EdgeInsets.only(top: 12, bottom: 16),
+                      margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.surface,
@@ -230,7 +304,7 @@ class _SettingPageState extends State<SettingPage> {
                                   try {
                                     // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
                                     final app = W3DatingApp.of(context);
-                                    app.setThemeMode(v ? ThemeMode.light : ThemeMode.dark);
+                                    app?.setThemeMode(v ? ThemeMode.light : ThemeMode.dark);
                                     setSB(() {});
                                     setState(() {});
                                   } catch (_) {
@@ -239,34 +313,6 @@ class _SettingPageState extends State<SettingPage> {
                                 },
                               );
                             },
-                          ),
-                        ],
-                      ),
-                    ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              activeTrackColor: const Color(0xFFFF3F80),
-                              inactiveTrackColor: Colors.white24,
-                              thumbColor: const Color(0xFFFF3F80),
-                              overlayColor: const Color(0x33FF3F80),
-                              trackHeight: 4,
-                              rangeThumbShape: const RoundRangeSliderThumbShape(
-                                enabledThumbRadius: 10,
-                              ),
-                            ),
-                            child: RangeSlider(
-                              values: ageRange,
-                              min: 18,
-                              max: 70,
-                              onChanged: (values) {
-                                setState(() {
-                                  ageRange = values;
-                                });
-                              },
-                            ),
                           ),
                         ],
                       ),

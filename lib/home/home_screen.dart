@@ -9,7 +9,7 @@ import '../providers/swipe_provider.dart';
 import '../config/api_config.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -381,7 +381,7 @@ class SwipeCardStack extends StatefulWidget {
   final VoidCallback? onLike;
   final VoidCallback? onDislike;
 
-  const SwipeCardStack({Key? key, required this.profiles, this.onLike, this.onDislike}) : super(key: key);
+  const SwipeCardStack({super.key, required this.profiles, this.onLike, this.onDislike});
 
   @override
   State<SwipeCardStack> createState() => _SwipeCardStackState();

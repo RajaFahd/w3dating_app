@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/profile_provider.dart';
 
 class EnterBirthDate extends StatefulWidget {
-  const EnterBirthDate({Key? key}) : super(key: key);
+  const EnterBirthDate({super.key});
 
   @override
   State<EnterBirthDate> createState() => _EnterBirthDateState();

@@ -4,7 +4,7 @@ import '../services/api_service.dart';
 import 'dart:async';
 
 class ChatScreenApi extends StatefulWidget {
-  const ChatScreenApi({Key? key}) : super(key: key);
+  const ChatScreenApi({super.key});
 
   @override
   State<ChatScreenApi> createState() => _ChatScreenApiState();
@@ -124,7 +124,7 @@ class _ChatScreenApiState extends State<ChatScreenApi> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: true,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
           Navigator.pushReplacementNamed(context, '/chat_list');
         }
